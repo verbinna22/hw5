@@ -54,7 +54,7 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.SLLanguage;
 import com.oracle.truffle.sl.parser.SLNodeParser;
-import com.oracle.truffle.sl.parser.SLBytecodeParser;
+//import com.oracle.truffle.sl.parser.SLBytecodeParser;
 
 /**
  * Manages the mapping from function names to {@link SLFunction function objects}.
@@ -117,7 +117,7 @@ public final class SLFunctionRegistry {
 
     public void register(Source newFunctions) {
         if (language.isUseBytecode()) {
-            register(SLBytecodeParser.parseSL(language, newFunctions));
+            //register(SLBytecodeParser.parseSL(language, newFunctions));
         } else {
             register(SLNodeParser.parseSL(language, newFunctions));
         }

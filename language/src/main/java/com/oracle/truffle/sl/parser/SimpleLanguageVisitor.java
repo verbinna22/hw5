@@ -65,11 +65,11 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhile_statement(SimpleLanguageParser.While_statementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#if_statement}.
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#if_expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitIf_statement(SimpleLanguageParser.If_statementContext ctx);
+	T visitIf_expression(SimpleLanguageParser.If_expressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#return_statement}.
 	 * @param ctx the parse tree

@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.oracle.truffle.sl.nodes.expression.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -70,24 +71,6 @@ import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLIfNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLWhileNode;
-import com.oracle.truffle.sl.nodes.expression.SLAddNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLBigIntegerLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLDivNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLEqualNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLFunctionLiteralNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLInvokeNode;
-import com.oracle.truffle.sl.nodes.expression.SLLessOrEqualNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLLessThanNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLLogicalAndNode;
-import com.oracle.truffle.sl.nodes.expression.SLLogicalNotNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLLogicalOrNode;
-import com.oracle.truffle.sl.nodes.expression.SLLongLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLMulNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLParenExpressionNode;
-import com.oracle.truffle.sl.nodes.expression.SLReadPropertyNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLStringLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLSubNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLWritePropertyNodeGen;
 import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
 import com.oracle.truffle.sl.nodes.local.SLReadLocalVariableNodeGen;
 import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNodeGen;
@@ -100,7 +83,6 @@ import com.oracle.truffle.sl.parser.SimpleLanguageParser.Debugger_statementConte
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ExpressionContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Expression_statementContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.FunctionContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.If_statementContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Logic_factorContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Logic_termContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberAssignContext;
@@ -279,19 +261,19 @@ public class SLNodeParser extends SLBaseParser {
             return whileNode;
         }
 
-        @Override
-        public SLStatementNode visitIf_statement(If_statementContext ctx) {
-            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
-            SLStatementNode thenPartNode = visitBlock(ctx.then);
-            SLStatementNode elsePartNode = ctx.alt == null ? null : visitBlock(ctx.alt);
-
-            conditionNode.addStatementTag();
-            final int start = ctx.i.getStartIndex();
-            final int end = elsePartNode == null ? thenPartNode.getSourceEndIndex() : elsePartNode.getSourceEndIndex();
-            final SLIfNode ifNode = new SLIfNode(conditionNode, thenPartNode, elsePartNode);
-            ifNode.setSourceSection(start, end - start);
-            return ifNode;
-        }
+//        @Override
+//        public SLStatementNode visitIf_statement(If_statementContext ctx) {
+//            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
+//            SLStatementNode thenPartNode = visitBlock(ctx.then);
+//            SLStatementNode elsePartNode = ctx.alt == null ? null : visitBlock(ctx.alt);
+//
+//            conditionNode.addStatementTag();
+//            final int start = ctx.i.getStartIndex();
+//            final int end = elsePartNode == null ? thenPartNode.getSourceEndIndex() : elsePartNode.getSourceEndIndex();
+//            final SLIfNode ifNode = new SLIfNode(conditionNode, thenPartNode, elsePartNode);
+//            ifNode.setSourceSection(start, end - start);
+//            return ifNode;
+//        }
 
         @Override
         public SLStatementNode visitReturn_statement(Return_statementContext ctx) {
@@ -327,6 +309,20 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
+        @Override
+        public SLExpressionNode visitIf_expression(SimpleLanguageParser.If_expressionContext ctx) {
+            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
+            SLStatementNode thenPartNode = visitBlock(ctx.then);
+            SLStatementNode elsePartNode = ctx.alt == null ? null : visitBlock(ctx.alt);
+
+            conditionNode.addStatementTag();
+            final int start = ctx.i.getStartIndex();
+            final int end = elsePartNode == null ? thenPartNode.getSourceEndIndex() : elsePartNode.getSourceEndIndex();
+            final SLIfExpression ifNode = new SLIfExpression(conditionNode, thenPartNode, elsePartNode);
+            ifNode.setSourceSection(start, end - start);
+            return ifNode;
+        }
+
         @Override
         public SLExpressionNode visitExpression(ExpressionContext ctx) {
             return createBinary(ctx.logic_term(), ctx.OP_OR());
@@ -413,7 +409,7 @@ public class SLNodeParser extends SLBaseParser {
                 case "&&":
                     result = new SLLogicalAndNode(leftUnboxed, rightUnboxed);
                     break;
-                case "||":
+                case "!!":
                     result = new SLLogicalOrNode(leftUnboxed, rightUnboxed);
                     break;
                 default:

@@ -82,7 +82,6 @@ statement
 	: while_statement
 	| break_statement
 	| continue_statement
-	| if_statement
 	| return_statement
 	| expression_statement
 	| debugger_statement
@@ -110,7 +109,7 @@ while_statement
 	;
 
 
-if_statement
+if_expression
 	: i='if' '(' condition=expression ')'
 		then=block 
 		( 'else' alt=block )?
@@ -123,7 +122,8 @@ return_statement
 
 
 expression
-	: logic_term (OP_OR logic_term)*
+	: if_expression
+	| logic_term (OP_OR logic_term)*
 	;
 
 
