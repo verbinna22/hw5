@@ -120,9 +120,12 @@ return_statement
 
 
 expression
-	: logic_term (OP_OR logic_term)*
+	: or_term (OP_SEQ or_term)*
 	;
 
+or_term
+    : logic_term (OP_OR logic_term)*
+    ;
 
 logic_term
 	: logic_factor (OP_AND logic_factor)*
@@ -167,6 +170,7 @@ WS : [ \t\r\n\u000C]+ -> skip;
 COMMENT : '(*' .*? '*)' -> skip;
 LINE_COMMENT : '--' ~[\r\n]* -> skip;
 
+OP_SEQ: ';';
 OP_OR: '!!';
 OP_AND: '&&';
 OP_COMPARE: '<' | '<=' | '>' | '>=' | '==' | '!=';

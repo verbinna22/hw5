@@ -46,7 +46,7 @@ import com.oracle.truffle.sl.nodes.SLExpressionNode;
 /**
  * Logical disjunction node with short circuit evaluation.
  */
-@NodeInfo(shortName = "||")
+@NodeInfo(shortName = "!!")
 public final class SLLogicalOrNode extends SLShortCircuitNode {
 
     public SLLogicalOrNode(SLExpressionNode left, SLExpressionNode right) {

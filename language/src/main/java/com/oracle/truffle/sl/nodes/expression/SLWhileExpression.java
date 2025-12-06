@@ -14,7 +14,7 @@ public class SLWhileExpression extends SLExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         loopNode.execute(frame);
-        return null;
+        return 0;
     }
 
     public SLWhileExpression(SLExpressionNode conditionNode, SLStatementNode bodyNode) {

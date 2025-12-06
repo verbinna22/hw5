@@ -308,6 +308,11 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public SLExpressionNode visitExpression(ExpressionContext ctx) {
+            return createBinary(ctx.or_term(), ctx.OP_SEQ());
+        }
+
+        @Override
+        public SLExpressionNode visitOr_term(SimpleLanguageParser.Or_termContext ctx) {
             return createBinary(ctx.logic_term(), ctx.OP_OR());
         }
 
@@ -359,6 +364,9 @@ public class SLNodeParser extends SLBaseParser {
 
             final SLExpressionNode result;
             switch (opToken.getText()) {
+                case ";":
+                    result = new SLSeqNode(leftUnboxed, rightUnboxed);
+                    break;
                 case "+":
                     result = SLAddNodeGen.create(leftUnboxed, rightUnboxed);
                     break;

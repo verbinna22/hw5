@@ -22,7 +22,7 @@ func main() {
   println(45 % 2)@
   i := 0@
   while (i < 10) {
-    doIt(i)@
+    doIt(i);
     i := i + 1@
   }@
 }
