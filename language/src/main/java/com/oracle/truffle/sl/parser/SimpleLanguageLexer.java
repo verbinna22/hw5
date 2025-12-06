@@ -46,7 +46,7 @@ public class SimpleLanguageLexer extends Lexer {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'func'", "'('", "','", "')'", "'{'", "'}'", "'break'", "';'", 
+			null, "'func'", "'('", "','", "')'", "'{'", "'}'", "'break'", "'@'", 
 			"'continue'", "'debugger'", "'while'", "'if'", "'else'", "'return'", 
 			"':='", "'.'", "'['", "']'", null, null, null, "'!!'", "'&&'"
 		};
@@ -199,7 +199,7 @@ public class SimpleLanguageLexer extends Lexer {
 		"{\u0000\u0000W\n\u0001\u0000\u0000\u0000XY\u0005}\u0000\u0000Y\f\u0001"+
 		"\u0000\u0000\u0000Z[\u0005b\u0000\u0000[\\\u0005r\u0000\u0000\\]\u0005"+
 		"e\u0000\u0000]^\u0005a\u0000\u0000^_\u0005k\u0000\u0000_\u000e\u0001\u0000"+
-		"\u0000\u0000`a\u0005;\u0000\u0000a\u0010\u0001\u0000\u0000\u0000bc\u0005"+
+		"\u0000\u0000`a\u0005@\u0000\u0000a\u0010\u0001\u0000\u0000\u0000bc\u0005"+
 		"c\u0000\u0000cd\u0005o\u0000\u0000de\u0005n\u0000\u0000ef\u0005t\u0000"+
 		"\u0000fg\u0005i\u0000\u0000gh\u0005n\u0000\u0000hi\u0005u\u0000\u0000"+
 		"ij\u0005e\u0000\u0000j\u0012\u0001\u0000\u0000\u0000kl\u0005d\u0000\u0000"+

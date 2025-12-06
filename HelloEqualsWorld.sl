@@ -4,25 +4,25 @@
  *)
 
 func doIt(a) {
-  println("Initial stack trace:");
-  println(stacktrace());
+  println("Initial stack trace:")@
+  println(stacktrace())@
   
-  hello := 123;
-  println("After 123 assignment:");
-  println(stacktrace());
+  hello := 123@
+  println("After 123 assignment:")@
+  println(stacktrace())@
   
-  helloEqualsWorld();
-  println("After hello assignment:");
-  println(stacktrace());
+  helloEqualsWorld()@
+  println("After hello assignment:")@
+  println(stacktrace())@
   
---  readln();
+--  readln()@
 }
 
 func main() {
-  println(45 % 2);
-  i := 0;
+  println(45 % 2)@
+  i := 0@
   while (i < 10) {
-    doIt(i);
-    i := i + 1;
-  };
+    doIt(i)@
+    i := i + 1@
+  }@
 }

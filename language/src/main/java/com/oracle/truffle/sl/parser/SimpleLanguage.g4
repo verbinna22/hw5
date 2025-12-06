@@ -87,19 +87,19 @@ statement
 	;
 
 break_statement
-	: b='break'	';'
+	: b='break'	'@'
 	;
 
 continue_statement
-	: c='continue' ';'
+	: c='continue' '@'
 	;
 
 expression_statement
-	: expression ';'
+	: expression '@'
 	;
 
 debugger_statement
-	: d='debugger' ';'
+	: d='debugger' '@'
 	;
 
 while_expression
@@ -115,7 +115,7 @@ if_expression
 
 
 return_statement
-	: r='return' expression? ';'
+	: r='return' expression? '@'
 	;
 
 
