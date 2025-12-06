@@ -10,6 +10,7 @@ import com.oracle.truffle.sl.nodes.SLStatementNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.util.SLToBooleanNodeGen;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
+import com.oracle.truffle.sl.runtime.SLNull;
 
 @NodeInfo(shortName = "if", description = "The node implementing a condional statement")
 public final class SLIfExpression extends SLExpressionNode {
@@ -52,7 +53,7 @@ public final class SLIfExpression extends SLExpressionNode {
                 elsePartNode.executeVoid(frame);
             }
         }
-        return 0;
+        return SLNull.SINGLETON;
     }
 
     private boolean evaluateCondition(VirtualFrame frame) {

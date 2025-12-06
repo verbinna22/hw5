@@ -150,7 +150,7 @@ public class SLNodeParser extends SLBaseParser {
         methodNodes.addAll(bodyNode.getStatements());
         final int bodyEndPos = bodyNode.getSourceEndIndex();
         final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
-        final SLStatementNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLStatementNode[methodNodes.size()]));
+        final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLStatementNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);

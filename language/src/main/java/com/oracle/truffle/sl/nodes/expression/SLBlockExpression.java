@@ -8,6 +8,7 @@ import com.oracle.truffle.sl.nodes.SLStatementNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.local.SLScopedNode;
 import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNode;
+import com.oracle.truffle.sl.runtime.SLNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
         if (this.block != null) {
             this.block.executeVoid(frame, BlockNode.NO_ARGUMENT);
         }
-        return 0;
+        return SLNull.SINGLETON;
     }
 
     @Override

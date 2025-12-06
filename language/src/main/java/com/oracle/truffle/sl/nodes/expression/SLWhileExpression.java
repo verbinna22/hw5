@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
+import com.oracle.truffle.sl.runtime.SLNull;
 
 @NodeInfo(shortName = "while", description = "The node implementing a while loop")
 public class SLWhileExpression extends SLExpressionNode {
@@ -14,7 +15,7 @@ public class SLWhileExpression extends SLExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         loopNode.execute(frame);
-        return 0;
+        return SLNull.SINGLETON;
     }
 
     public SLWhileExpression(SLExpressionNode conditionNode, SLStatementNode bodyNode) {

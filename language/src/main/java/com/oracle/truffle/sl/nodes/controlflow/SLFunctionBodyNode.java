@@ -42,6 +42,7 @@ package com.oracle.truffle.sl.nodes.controlflow;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLRootNode;
@@ -59,7 +60,7 @@ import com.oracle.truffle.sl.runtime.SLNull;
 public final class SLFunctionBodyNode extends SLExpressionNode {
 
     /** The body of the function. */
-    @Child private SLStatementNode bodyNode;
+    @Child private SLExpressionNode bodyNode;
 
     /**
      * Profiling information, collected by the interpreter, capturing whether the function had an
@@ -69,16 +70,17 @@ public final class SLFunctionBodyNode extends SLExpressionNode {
     private final BranchProfile exceptionTaken = BranchProfile.create();
     private final BranchProfile nullTaken = BranchProfile.create();
 
-    public SLFunctionBodyNode(SLStatementNode bodyNode) {
+    public SLFunctionBodyNode(SLExpressionNode bodyNode) {
         this.bodyNode = bodyNode;
         addRootTag();
     }
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
+        Object result = null;
         try {
             /* Execute the function body. */
-            bodyNode.executeVoid(frame);
+            result = bodyNode.executeGeneric(frame);
 
         } catch (SLReturnException ex) {
             /*
@@ -95,7 +97,20 @@ public final class SLFunctionBodyNode extends SLExpressionNode {
          * explicit return.
          */
         nullTaken.enter();
+        if (result != null) {
+            return result;
+        }
         /* Return the default null value. */
         return SLNull.SINGLETON;
+    }
+
+    @Override
+    public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
+        return bodyNode.executeLong(frame);
+    }
+
+    @Override
+    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
+        return bodyNode.executeBoolean(frame);
     }
 }
