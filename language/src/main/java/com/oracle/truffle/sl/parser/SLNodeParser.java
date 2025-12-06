@@ -147,7 +147,7 @@ public class SLNodeParser extends SLBaseParser {
 
         exitFunction();
 
-        methodNodes.addAll(bodyNode.getStatements());
+        methodNodes.addAll(bodyNode.getExpression());
         final int bodyEndPos = bodyNode.getSourceEndIndex();
         final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
         final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
@@ -222,7 +222,7 @@ public class SLNodeParser extends SLBaseParser {
         private void flattenBlocks(Iterable<? extends SLExpressionNode> bodyNodes, List<SLExpressionNode> flattenedNodes) {
             for (SLExpressionNode n : bodyNodes) {
                 if (n instanceof SLBlockExpression) {
-                    flattenBlocks(((SLBlockExpression) n).getStatements(), flattenedNodes);
+                    flattenBlocks(((SLBlockExpression) n).getExpression(), flattenedNodes);
                 } else {
                     flattenedNodes.add(n);
                 }

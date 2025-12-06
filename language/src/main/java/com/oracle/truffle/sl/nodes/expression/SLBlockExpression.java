@@ -5,7 +5,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.local.SLScopedNode;
 import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNode;
 import com.oracle.truffle.sl.runtime.SLNull;
@@ -83,7 +82,7 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
         return false;
     }
 
-    public List<SLExpressionNode> getStatements() {
+    public List<SLExpressionNode> getExpression() {
         if (block == null) {
             return Collections.emptyList();
         }
@@ -155,7 +154,7 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
                     scopedNode.setVisibleVariablesIndexOnEnter(varsIndex[0]);
                 }
                 // Do not enter any nested blocks.
-                if (!(node instanceof SLBlockNode)) {
+                if (!(node instanceof SLBlockExpression)) {
                     NodeUtil.forEachChild(node, this);
                 }
                 // Write to a variable is a declaration unless it exists already in a parent scope.
@@ -175,15 +174,15 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
         });
         Node parentBlock = findBlock();
         SLWriteLocalVariableNode[] parentVariables = null;
-        if (parentBlock instanceof SLBlockNode) {
-            parentVariables = ((SLBlockNode) parentBlock).getDeclaredLocalVariables();
+        if (parentBlock instanceof SLBlockExpression) {
+            parentVariables = ((SLBlockExpression) parentBlock).getDeclaredLocalVariables();
         }
         SLWriteLocalVariableNode[] variables = writeNodes.toArray(new SLWriteLocalVariableNode[writeNodes.size()]);
         parentBlockIndex = variables.length;
         if (parentVariables == null || parentVariables.length == 0) {
             return variables;
         } else {
-            int parentVariablesIndex = ((SLBlockNode) parentBlock).getParentBlockIndex();
+            int parentVariablesIndex = ((SLBlockExpression) parentBlock).getParentBlockIndex();
             int visibleVarsIndex = getVisibleVariablesIndexOnEnter();
             int allVarsLength = variables.length + visibleVarsIndex + parentVariables.length - parentVariablesIndex;
             SLWriteLocalVariableNode[] allVariables = Arrays.copyOf(variables, allVarsLength);

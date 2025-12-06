@@ -66,7 +66,7 @@ import com.oracle.truffle.sl.SLLanguage;
 import com.oracle.truffle.sl.nodes.SLAstRootNode;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLRootNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
+import com.oracle.truffle.sl.nodes.expression.SLBlockExpression;
 import com.oracle.truffle.sl.runtime.SLContext;
 import com.oracle.truffle.sl.runtime.SLNull;
 import com.oracle.truffle.sl.runtime.SLStrings;
@@ -80,7 +80,7 @@ import com.oracle.truffle.sl.runtime.SLStrings;
 public abstract class SLScopedNode extends Node {
 
     /**
-     * Index to the the {@link SLBlockNode#getDeclaredLocalVariables() block's variables} that
+     * Index to the the {@link  block's variables} that
      * determine variables belonging into this scope (excluding parent scopes) on node enter. The
      * scope variables are in the interval &lt;0, visibleVariablesIndexOnEnter).
      */
@@ -117,8 +117,8 @@ public abstract class SLScopedNode extends Node {
     @SuppressWarnings("static-method")
     final Object getScope(Frame frame, boolean nodeEnter, @Shared("node") @Cached(value = "this", adopt = false) SLScopedNode cachedNode,
                     @Cached(value = "this.findBlock()", adopt = false, allowUncached = true) Node blockNode) {
-        if (blockNode instanceof SLBlockNode) {
-            return new VariablesObject(frame, cachedNode, nodeEnter, (SLBlockNode) blockNode);
+        if (blockNode instanceof SLBlockExpression) {
+            return new VariablesObject(frame, cachedNode, nodeEnter, (SLBlockExpression) blockNode);
         } else {
             return new ArgumentsObject(frame, (SLAstRootNode) blockNode);
         }
@@ -160,16 +160,16 @@ public abstract class SLScopedNode extends Node {
     }
 
     /**
-     * Find block of this node. Traverse the parent chain and find the first {@link SLBlockNode}. If
+     * Find block of this node. Traverse the parent chain and find the first {@link}. If
      * none is found, {@link RootNode} is returned.
      *
-     * @return the block node, always non-null. Either SLBlockNode, or SLRootNode.
+     * @return the block node, always non-null. Either SLBlockExpression, or SLRootNode.
      */
     @NeverDefault
     public final Node findBlock() {
         Node parent = getParent();
         while (parent != null) {
-            if (parent instanceof SLBlockNode) {
+            if (parent instanceof SLBlockExpression) {
                 break;
             }
             Node p = parent.getParent();
@@ -183,7 +183,7 @@ public abstract class SLScopedNode extends Node {
     }
 
     /**
-     * Set the index to the the {@link SLBlockNode#getDeclaredLocalVariables() block's variables}
+     * Set the index to the the {@link }
      * that determine variables belonging into this scope (excluding parent scopes) on node enter.
      */
     public final void setVisibleVariablesIndexOnEnter(int index) {
@@ -211,7 +211,7 @@ public abstract class SLScopedNode extends Node {
 
     /**
      * Scope of function arguments. This scope is provided by nodes just under a {@link SLRootNode},
-     * outside of a {@link SLBlockNode block}.
+     * outside of a {@lin}.
      * <p>
      * The arguments declared by {@link SLRootNode#getDeclaredArguments() root node} are provided as
      * scope members.
@@ -495,10 +495,10 @@ public abstract class SLScopedNode extends Node {
         private final Frame frame;          // the current frame
         protected final SLScopedNode node;  // the current node
         final boolean nodeEnter;            // whether the node was entered or is about to be exited
-        @NeverDefault protected final SLBlockNode block;  // the inner-most block of the current
+        @NeverDefault protected final SLBlockExpression block;  // the inner-most block of the current
                                                           // node
 
-        VariablesObject(Frame frame, SLScopedNode node, boolean nodeEnter, SLBlockNode blockNode) {
+        VariablesObject(Frame frame, SLScopedNode node, boolean nodeEnter, SLBlockExpression blockNode) {
             this.frame = frame;
             this.node = node;
             this.nodeEnter = nodeEnter;
@@ -544,10 +544,10 @@ public abstract class SLScopedNode extends Node {
          */
         @ExportMessage
         @SuppressWarnings({"static-method", "unused"})
-        Object toDisplayString(boolean allowSideEffects, @Shared("block") @Cached(value = "this.block", adopt = false) SLBlockNode cachedBlock,
+        Object toDisplayString(boolean allowSideEffects, @Shared("block") @Cached(value = "this.block", adopt = false) SLBlockExpression cachedBlock,
                         @Shared("parentBlock") @Cached(value = "this.block.findBlock()", adopt = false, allowUncached = true) Node parentBlock) {
             // Cache the parent block for the fast-path access
-            if (parentBlock instanceof SLBlockNode) {
+            if (parentBlock instanceof SLBlockExpression) {
                 return "block";
             } else {
                 return ((SLRootNode) parentBlock).getTSName();
@@ -560,10 +560,10 @@ public abstract class SLScopedNode extends Node {
         @ExportMessage
         @SuppressWarnings({"static-method", "unused"})
         boolean hasScopeParent(
-                        @Shared("block") @Cached(value = "this.block", adopt = false) SLBlockNode cachedBlock,
+                        @Shared("block") @Cached(value = "this.block", adopt = false) SLBlockExpression cachedBlock,
                         @Shared("parentBlock") @Cached(value = "this.block.findBlock()", adopt = false, allowUncached = true) Node parentBlock) {
             // Cache the parent block for the fast-path access
-            return parentBlock instanceof SLBlockNode;
+            return parentBlock instanceof SLBlockExpression;
         }
 
         /**
@@ -572,13 +572,13 @@ public abstract class SLScopedNode extends Node {
         @ExportMessage
         @SuppressWarnings("unused")
         Object getScopeParent(
-                        @Shared("block") @Cached(value = "this.block", adopt = false) SLBlockNode cachedBlock,
+                        @Shared("block") @Cached(value = "this.block", adopt = false) SLBlockExpression cachedBlock,
                         @Shared("parentBlock") @Cached(value = "this.block.findBlock()", adopt = false, allowUncached = true) Node parentBlock) throws UnsupportedMessageException {
             // Cache the parent block for the fast-path access
-            if (!(parentBlock instanceof SLBlockNode)) {
+            if (!(parentBlock instanceof SLBlockExpression)) {
                 throw UnsupportedMessageException.create();
             }
-            return new VariablesObject(frame, cachedBlock, true, (SLBlockNode) parentBlock);
+            return new VariablesObject(frame, cachedBlock, true, (SLBlockExpression) parentBlock);
         }
 
         /**

@@ -57,8 +57,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.SLLanguage;
-import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
+import com.oracle.truffle.sl.nodes.expression.SLBlockExpression;
 import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
 import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNode;
 
@@ -165,7 +165,7 @@ public final class SLAstRootNode extends SLRootNode {
                 } else if (wn != null && (node instanceof SLReadArgumentNode)) {
                     writeArgNodes.add(wn);
                     return true;
-                } else if (wn == null && (node instanceof SLStatementNode && !(node instanceof SLBlockNode || node instanceof SLFunctionBodyNode))) {
+                } else if (wn == null && (node instanceof SLStatementNode && !(node instanceof SLBlockExpression || node instanceof SLFunctionBodyNode))) {
                     // A different SL node - we're done.
                     return false;
                 } else {

@@ -49,7 +49,6 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLBreakException;
 import com.oracle.truffle.sl.nodes.controlflow.SLContinueException;
 import com.oracle.truffle.sl.nodes.util.SLToBooleanNodeGen;
@@ -69,7 +68,7 @@ public final class SLWhileRepeatingNode extends Node implements RepeatingNode {
      */
     @Child private SLExpressionNode conditionNode;
 
-    /** Statement (or {@link SLBlockNode block}) executed as long as the condition is true. */
+    /** Statement (or {@link}) executed as long as the condition is true. */
     @Child private SLStatementNode bodyNode;
 
     /**

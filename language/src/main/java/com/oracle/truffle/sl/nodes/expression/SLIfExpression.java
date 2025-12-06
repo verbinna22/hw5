@@ -7,7 +7,6 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.util.SLToBooleanNodeGen;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 import com.oracle.truffle.sl.runtime.SLNull;
@@ -16,10 +15,10 @@ import com.oracle.truffle.sl.runtime.SLNull;
 public final class SLIfExpression extends SLExpressionNode {
     @Child private SLExpressionNode conditionNode;
 
-    /** Statement (or {@link SLBlockNode block}) executed when the condition is true. */
+    /** Statement (or {@link}) executed when the condition is true. */
     @Child private SLStatementNode thenPartNode;
 
-    /** Statement (or {@link SLBlockNode block}) executed when the condition is false. */
+    /** Statement (or {@link}) executed when the condition is false. */
     @Child private SLStatementNode elsePartNode;
 
     /**
