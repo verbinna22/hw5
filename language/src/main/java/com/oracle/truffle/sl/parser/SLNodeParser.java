@@ -365,6 +365,9 @@ public class SLNodeParser extends SLBaseParser {
                 case "*":
                     result = SLMulNodeGen.create(leftUnboxed, rightUnboxed);
                     break;
+                case "%":
+                    result = SLModNodeGen.create(leftUnboxed, rightUnboxed);
+                    break;
                 case "/":
                     result = SLDivNodeGen.create(leftUnboxed, rightUnboxed);
                     break;

@@ -171,7 +171,7 @@ OP_OR: '!!';
 OP_AND: '&&';
 OP_COMPARE: '<' | '<=' | '>' | '>=' | '==' | '!=';
 OP_ADD: '+' | '-';
-OP_MUL: '*' | '/';
+OP_MUL: '*' | '/' | '%';
 
 fragment LETTER : [A-Z] | [a-z] | '_' | '$';
 fragment NON_ZERO_DIGIT : [1-9];

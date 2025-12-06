@@ -19,6 +19,7 @@ func doIt(a) {
 }
 
 func main() {
+  println(45 % 2);
   i := 0;
   while (i < 10) {
     doIt(i);
