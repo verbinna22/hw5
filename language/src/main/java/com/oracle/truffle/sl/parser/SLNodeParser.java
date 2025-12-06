@@ -63,7 +63,6 @@ import com.oracle.truffle.sl.nodes.SLAstRootNode;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLRootNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLBreakNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
@@ -144,14 +143,14 @@ public class SLNodeParser extends SLBaseParser {
             methodNodes.add(assignment);
         }
 
-        SLBlockNode bodyNode = (SLBlockNode) statementVisitor.visitBlock(ctx.body);
+        SLBlockExpression bodyNode = (SLBlockExpression) statementVisitor.visitBlock(ctx.body);
 
         exitFunction();
 
         methodNodes.addAll(bodyNode.getStatements());
         final int bodyEndPos = bodyNode.getSourceEndIndex();
         final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
-        final SLStatementNode methodBlock = new SLBlockNode(methodNodes.toArray(new SLStatementNode[methodNodes.size()]));
+        final SLStatementNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLStatementNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
@@ -210,7 +209,7 @@ public class SLNodeParser extends SLBaseParser {
                     statement.addStatementTag();
                 }
             }
-            SLBlockNode blockNode = new SLBlockNode(flattenedNodes.toArray(new SLStatementNode[flattenedNodes.size()]));
+            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLStatementNode[flattenedNodes.size()]));
             if (startPos != 0 || endPos != 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
@@ -221,8 +220,8 @@ public class SLNodeParser extends SLBaseParser {
 
         private void flattenBlocks(Iterable<? extends SLStatementNode> bodyNodes, List<SLStatementNode> flattenedNodes) {
             for (SLStatementNode n : bodyNodes) {
-                if (n instanceof SLBlockNode) {
-                    flattenBlocks(((SLBlockNode) n).getStatements(), flattenedNodes);
+                if (n instanceof SLBlockExpression) {
+                    flattenBlocks(((SLBlockExpression) n).getStatements(), flattenedNodes);
                 } else {
                     flattenedNodes.add(n);
                 }
