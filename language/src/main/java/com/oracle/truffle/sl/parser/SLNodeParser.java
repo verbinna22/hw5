@@ -155,7 +155,6 @@ public class SLNodeParser extends SLBaseParser {
         for (var definition : ctx.def()) {
             var f = definition.function();
             if (f != null) {
-                System.out.println(f.IDENTIFIER(0).getText());
                 SLNodeParser.this.visitFunction(f);
             }
         }
@@ -240,10 +239,21 @@ public class SLNodeParser extends SLBaseParser {
 
             List<SLExpressionNode> bodyNodes = new ArrayList<>();
 
-//            for (StatementContext child : ctx.expression()) {
-//
-//            }
             bodyNodes.add(expressionVisitor.visitExpression(ctx.expression()));
+
+            for (var definition : ctx.def().reversed()) {
+                var variableDefinition = definition.varSingleLineDef();
+                if (variableDefinition != null) {
+                    for (var variable : variableDefinition.varSingleDef().reversed()) {
+                        if (variable.or_term() != null) {
+                            var varToken = variable.IDENTIFIER().getSymbol();
+                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var result = createAssignment(createString(varToken, false), valueNode, null);
+                            bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                        }
+                    }
+                }
+            }
 
             exitBlock();
 
