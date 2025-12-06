@@ -14,14 +14,14 @@ null
 'if'
 'else'
 'return'
-'='
+':='
 '.'
 '['
 ']'
 null
 null
 null
-'||'
+'!!'
 '&&'
 null
 null

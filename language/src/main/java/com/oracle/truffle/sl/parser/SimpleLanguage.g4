@@ -157,7 +157,7 @@ factor
 
 member_expression
 	: '(' ( expression (',' expression)* )? ')' 	# MemberCall
-	| '=' expression							  	# MemberAssign
+	| ':=' expression							  	# MemberAssign
 	| '.' IDENTIFIER						      	# MemberField
 	| '[' expression ']'							# MemberIndex
 	;
@@ -168,7 +168,7 @@ WS : [ \t\r\n\u000C]+ -> skip;
 COMMENT : '/*' .*? '*/' -> skip;
 LINE_COMMENT : '//' ~[\r\n]* -> skip;
 
-OP_OR: '||';
+OP_OR: '!!';
 OP_AND: '&&';
 OP_COMPARE: '<' | '<=' | '>' | '>=' | '==' | '!=';
 OP_ADD: '+' | '-';

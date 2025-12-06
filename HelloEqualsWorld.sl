@@ -7,7 +7,7 @@ func doIt(a) {
   println("Initial stack trace:");
   println(stacktrace());
   
-  hello = 123;
+  hello := 123;
   println("After 123 assignment:");
   println(stacktrace());
   
@@ -19,9 +19,9 @@ func doIt(a) {
 }
 
 func main() {
-  i = 0;
+  i := 0;
   while (i < 10) {
     doIt(i);
-    i = i + 1;
+    i := i + 1;
   }
 }
