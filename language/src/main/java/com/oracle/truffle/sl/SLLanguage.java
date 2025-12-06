@@ -105,7 +105,6 @@ import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLBreakNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLIfNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLWhileNode;
 import com.oracle.truffle.sl.nodes.expression.SLAddNode;
@@ -177,7 +176,7 @@ import com.oracle.truffle.sl.runtime.SLStrings;
  * <li>Local variables: local variables must be defined (via a {@link SLWriteLocalVariableNode
  * write}) before they can be used (by a {@link SLReadLocalVariableNode read}). Local variables are
  * not visible outside of the block where they were first defined.
- * <li>Basic control flow statements: {@link SLBlockNode blocks}, {@link SLIfNode if},
+ * <li>Basic control flow statements: {@link SLBlockNode blocks},
  * {@link SLWhileNode while} with {@link SLBreakNode break} and {@link SLContinueNode continue},
  * {@link SLReturnNode return}.
  * <li>Debugging control: {@link SLDebuggerNode debugger} statement uses

@@ -103,11 +103,10 @@ debugger_statement
 	: d='debugger' ';'
 	;
 
-while_statement
-	: w='while' '(' condition=expression ')'
-		body=block
-	;
-
+while_expression
+    : w='while' '(' condition=expression ')'
+    		body=block
+    	;
 
 if_expression
 	: i='if' '(' condition=expression ')'
@@ -123,6 +122,7 @@ return_statement
 
 expression
 	: if_expression
+	| while_expression
 	| logic_term (OP_OR logic_term)*
 	;
 

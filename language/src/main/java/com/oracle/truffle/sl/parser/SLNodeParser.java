@@ -68,7 +68,6 @@ import com.oracle.truffle.sl.nodes.controlflow.SLBreakNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLIfNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLWhileNode;
 import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
@@ -261,19 +260,6 @@ public class SLNodeParser extends SLBaseParser {
             return whileNode;
         }
 
-//        @Override
-//        public SLStatementNode visitIf_statement(If_statementContext ctx) {
-//            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
-//            SLStatementNode thenPartNode = visitBlock(ctx.then);
-//            SLStatementNode elsePartNode = ctx.alt == null ? null : visitBlock(ctx.alt);
-//
-//            conditionNode.addStatementTag();
-//            final int start = ctx.i.getStartIndex();
-//            final int end = elsePartNode == null ? thenPartNode.getSourceEndIndex() : elsePartNode.getSourceEndIndex();
-//            final SLIfNode ifNode = new SLIfNode(conditionNode, thenPartNode, elsePartNode);
-//            ifNode.setSourceSection(start, end - start);
-//            return ifNode;
-//        }
 
         @Override
         public SLStatementNode visitReturn_statement(Return_statementContext ctx) {
@@ -628,7 +614,7 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     private static boolean isHaltInCondition(SLStatementNode statement) {
-        return (statement instanceof SLIfNode) || (statement instanceof SLWhileNode);
+        return (statement instanceof SLIfExpression) || (statement instanceof SLWhileNode);
     }
 
     private static void srcFromToken(SLStatementNode node, Token token) {
