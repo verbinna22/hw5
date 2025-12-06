@@ -13,7 +13,7 @@ func doIt(a) {
   
   helloEqualsWorld();
   println("After hello assignment:");
-  println(stacktrace())@
+  println(stacktrace())
   
 --  readln()@
 }
@@ -23,6 +23,6 @@ func main() {
   i := 0;
   while (i < 10) {
     doIt(i);
-    i := i + 1@
-  }@
+    i := i + 1
+  }
 }

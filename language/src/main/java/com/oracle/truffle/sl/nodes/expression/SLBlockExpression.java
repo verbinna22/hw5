@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 @NodeInfo(shortName = "block", description = "The node implementing a source code block")
-public class SLBlockExpression  extends SLExpressionNode implements BlockNode.ElementExecutor<SLStatementNode> {
+public class SLBlockExpression  extends SLExpressionNode implements BlockNode.ElementExecutor<SLExpressionNode> {
     /**
      * The block of child nodes. Using the block node allows Truffle to split the block into
      * multiple groups for compilation if the method is too big. This is an optional API.
@@ -25,7 +25,7 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
      * Truffle from compiling big methods, so these methods might fail to compile with a compilation
      * bailout.
      */
-    @Child private BlockNode<SLStatementNode> block;
+    @Child private BlockNode<SLExpressionNode> block;
 
     /**
      * All declared variables visible from this block (including all parent blocks). Variables
@@ -39,7 +39,7 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
     @CompilerDirectives.CompilationFinal
     private int parentBlockIndex = -1;
 
-    public SLBlockExpression(SLStatementNode[] bodyNodes) {
+    public SLBlockExpression(SLExpressionNode[] bodyNodes) {
         /*
          * Truffle block nodes cannot be empty, that is why we just set the entire block to null if
          * there are no elements. This is good practice as it safes memory.
@@ -62,28 +62,28 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         if (this.block != null) {
-            this.block.executeVoid(frame, BlockNode.NO_ARGUMENT);
+            return this.block.executeGeneric(frame, BlockNode.NO_ARGUMENT);
         }
         return SLNull.SINGLETON;
     }
 
     @Override
-    public long executeLong(VirtualFrame frame) {
+    public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
         if (this.block != null) {
-            this.block.executeVoid(frame, BlockNode.NO_ARGUMENT);
+            return this.block.executeLong(frame, BlockNode.NO_ARGUMENT);
         }
         return 0;
     }
 
     @Override
-    public boolean executeBoolean(VirtualFrame frame) {
+    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
         if (this.block != null) {
-            this.block.executeVoid(frame, BlockNode.NO_ARGUMENT);
+            return this.block.executeBoolean(frame, BlockNode.NO_ARGUMENT);
         }
         return false;
     }
 
-    public List<SLStatementNode> getStatements() {
+    public List<SLExpressionNode> getStatements() {
         if (block == null) {
             return Collections.emptyList();
         }
@@ -100,8 +100,23 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
      * does not need to remember any state so we reuse a singleton instance.
      */
     @Override
-    public void executeVoid(VirtualFrame frame, SLStatementNode node, int index, int argument) {
+    public void executeVoid(VirtualFrame frame, SLExpressionNode node, int index, int argument) {
         node.executeVoid(frame);
+    }
+
+    @Override
+    public Object executeGeneric(VirtualFrame frame, SLExpressionNode node, int index, int argument) {
+        return node.executeGeneric(frame);
+    }
+
+    @Override
+    public long executeLong(VirtualFrame frame, SLExpressionNode node, int index, int argument) throws UnexpectedResultException {
+        return node.executeLong(frame);
+    }
+
+    @Override
+    public boolean executeBoolean(VirtualFrame frame, SLExpressionNode node, int index, int argument) throws UnexpectedResultException {
+        return node.executeBoolean(frame);
     }
 
     /**

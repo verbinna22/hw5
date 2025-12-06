@@ -74,7 +74,7 @@ function
 
 
 block
-	: statement*
+	: expression
 	;
 
 

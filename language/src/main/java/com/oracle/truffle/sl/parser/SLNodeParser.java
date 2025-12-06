@@ -126,7 +126,7 @@ public class SLNodeParser extends SLBaseParser {
 
         int functionStartPos = nameToken.getStartIndex();
         frameDescriptorBuilder = FrameDescriptor.newBuilder();
-        List<SLStatementNode> methodNodes = new ArrayList<>();
+        List<SLExpressionNode> methodNodes = new ArrayList<>();
 
         int parameterCount = enterFunction(ctx).size();
 
@@ -150,7 +150,7 @@ public class SLNodeParser extends SLBaseParser {
         methodNodes.addAll(bodyNode.getStatements());
         final int bodyEndPos = bodyNode.getSourceEndIndex();
         final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
-        final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLStatementNode[methodNodes.size()]));
+        final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
@@ -192,15 +192,16 @@ public class SLNodeParser extends SLBaseParser {
                 endPos = endToken.getStopIndex();
             }
 
-            List<SLStatementNode> bodyNodes = new ArrayList<>();
+            List<SLExpressionNode> bodyNodes = new ArrayList<>();
 
-            for (StatementContext child : ctx.statement()) {
-                bodyNodes.add(visitStatement(child));
-            }
+//            for (StatementContext child : ctx.expression()) {
+//
+//            }
+            bodyNodes.add(expressionVisitor.visitExpression(ctx.expression()));
 
             exitBlock();
 
-            List<SLStatementNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
             flattenBlocks(bodyNodes, flattenedNodes);
             int n = flattenedNodes.size();
             for (int i = 0; i < n; i++) {
@@ -209,7 +210,7 @@ public class SLNodeParser extends SLBaseParser {
                     statement.addStatementTag();
                 }
             }
-            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLStatementNode[flattenedNodes.size()]));
+            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
             if (startPos != 0 || endPos != 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
@@ -218,8 +219,8 @@ public class SLNodeParser extends SLBaseParser {
             return blockNode;
         }
 
-        private void flattenBlocks(Iterable<? extends SLStatementNode> bodyNodes, List<SLStatementNode> flattenedNodes) {
-            for (SLStatementNode n : bodyNodes) {
+        private void flattenBlocks(Iterable<? extends SLExpressionNode> bodyNodes, List<SLExpressionNode> flattenedNodes) {
+            for (SLExpressionNode n : bodyNodes) {
                 if (n instanceof SLBlockExpression) {
                     flattenBlocks(((SLBlockExpression) n).getStatements(), flattenedNodes);
                 } else {
