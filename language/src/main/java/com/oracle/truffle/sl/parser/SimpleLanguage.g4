@@ -68,13 +68,13 @@ simplelanguage
 function
 	: 'func' IDENTIFIER
 		s='(' (IDENTIFIER (',' IDENTIFIER)*)? ')'
-		body=block
+		'{' body=block '}'
 	;
 
 
 
 block
-	: s='{' statement* e='}'
+	: statement*
 	;
 
 
@@ -104,13 +104,13 @@ debugger_statement
 
 while_expression
     : w='while' '(' condition=expression ')'
-    		body=block
+    		'{' body=block '}'
     	;
 
 if_expression
 	: i='if' '(' condition=expression ')'
-		then=block 
-		( 'else' alt=block )?
+		'{' then=block '}'
+		( 'else' '{' alt=block '}')?
 	;
 
 

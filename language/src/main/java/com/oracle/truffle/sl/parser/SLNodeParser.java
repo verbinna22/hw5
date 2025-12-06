@@ -180,8 +180,18 @@ public class SLNodeParser extends SLBaseParser {
                 frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, newLocal, null);
             }
 
-            int startPos = ctx.s.getStartIndex();
-            int endPos = ctx.e.getStopIndex() + 1;
+
+            int startPos;
+            int endPos;
+
+            var startToken = ctx.getStart();
+            var endToken = ctx.getStop();
+            if (startToken == null || endToken == null) {
+                startPos = endPos = 0;
+            } else {
+                startPos = startToken.getStartIndex();
+                endPos = endToken.getStopIndex();
+            }
 
             List<SLStatementNode> bodyNodes = new ArrayList<>();
 
@@ -201,7 +211,11 @@ public class SLNodeParser extends SLBaseParser {
                 }
             }
             SLBlockNode blockNode = new SLBlockNode(flattenedNodes.toArray(new SLStatementNode[flattenedNodes.size()]));
-            blockNode.setSourceSection(startPos, endPos - startPos);
+            if (startPos != 0 || endPos != 0) {
+                blockNode.setSourceSection(startPos, endPos - startPos);
+            } else {
+                blockNode.setUnavailableSourceSection();
+            }
             return blockNode;
         }
 
