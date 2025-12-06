@@ -740,29 +740,27 @@ public class SimpleLanguageParser extends Parser {
 	public final ExpressionContext expression() throws RecognitionException {
 		ExpressionContext _localctx = new ExpressionContext(_ctx, getState());
 		enterRule(_localctx, 22, RULE_expression);
+		int _la;
 		try {
-			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(112);
 			or_term();
 			setState(117);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
-			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
-				if ( _alt==1 ) {
-					{
-					{
-					setState(113);
-					match(OP_SEQ);
-					setState(114);
-					or_term();
-					}
-					} 
+			_la = _input.LA(1);
+			while (_la==OP_SEQ) {
+				{
+				{
+				setState(113);
+				match(OP_SEQ);
+				setState(114);
+				or_term();
+				}
 				}
 				setState(119);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
+				_la = _input.LA(1);
 			}
 			}
 		}
@@ -1309,8 +1307,8 @@ public class SimpleLanguageParser extends Parser {
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class MemberAssignContext extends Member_expressionContext {
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
+		public Or_termContext or_term() {
+			return getRuleContext(Or_termContext.class,0);
 		}
 		public MemberAssignContext(Member_expressionContext ctx) { copyFrom(ctx); }
 		@Override
@@ -1371,7 +1369,7 @@ public class SimpleLanguageParser extends Parser {
 				setState(186);
 				match(T__14);
 				setState(187);
-				expression();
+				or_term();
 				}
 				break;
 			case T__15:
@@ -1523,14 +1521,14 @@ public class SimpleLanguageParser extends Parser {
 		"\u00b5\u00b8\u0001\u0000\u0000\u0000\u00b6\u00b4\u0001\u0000\u0000\u0000"+
 		"\u00b7\u00af\u0001\u0000\u0000\u0000\u00b7\u00b8\u0001\u0000\u0000\u0000"+
 		"\u00b8\u00b9\u0001\u0000\u0000\u0000\u00b9\u00c3\u0005\u0004\u0000\u0000"+
-		"\u00ba\u00bb\u0005\u000f\u0000\u0000\u00bb\u00c3\u0003\u0016\u000b\u0000"+
-		"\u00bc\u00bd\u0005\u0010\u0000\u0000\u00bd\u00c3\u0005\u001c\u0000\u0000"+
-		"\u00be\u00bf\u0005\u0011\u0000\u0000\u00bf\u00c0\u0003\u0016\u000b\u0000"+
-		"\u00c0\u00c1\u0005\u0012\u0000\u0000\u00c1\u00c3\u0001\u0000\u0000\u0000"+
-		"\u00c2\u00ae\u0001\u0000\u0000\u0000\u00c2\u00ba\u0001\u0000\u0000\u0000"+
-		"\u00c2\u00bc\u0001\u0000\u0000\u0000\u00c2\u00be\u0001\u0000\u0000\u0000"+
-		"\u00c3%\u0001\u0000\u0000\u0000\u0012*7:CMhlu}\u0085\u008b\u0092\u009a"+
-		"\u00a3\u00ac\u00b4\u00b7\u00c2";
+		"\u00ba\u00bb\u0005\u000f\u0000\u0000\u00bb\u00c3\u0003\u0018\f\u0000\u00bc"+
+		"\u00bd\u0005\u0010\u0000\u0000\u00bd\u00c3\u0005\u001c\u0000\u0000\u00be"+
+		"\u00bf\u0005\u0011\u0000\u0000\u00bf\u00c0\u0003\u0016\u000b\u0000\u00c0"+
+		"\u00c1\u0005\u0012\u0000\u0000\u00c1\u00c3\u0001\u0000\u0000\u0000\u00c2"+
+		"\u00ae\u0001\u0000\u0000\u0000\u00c2\u00ba\u0001\u0000\u0000\u0000\u00c2"+
+		"\u00bc\u0001\u0000\u0000\u0000\u00c2\u00be\u0001\u0000\u0000\u0000\u00c3"+
+		"%\u0001\u0000\u0000\u0000\u0012*7:CMhlu}\u0085\u008b\u0092\u009a\u00a3"+
+		"\u00ac\u00b4\u00b7\u00c2";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

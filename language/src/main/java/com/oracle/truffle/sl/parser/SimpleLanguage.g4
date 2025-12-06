@@ -159,7 +159,7 @@ factor
 
 member_expression
 	: '(' ( expression (',' expression)* )? ')' 	# MemberCall
-	| ':=' expression							  	# MemberAssign
+	| ':=' or_term							  	    # MemberAssign
 	| '.' IDENTIFIER						      	# MemberField
 	| '[' expression ']'							# MemberIndex
 	;

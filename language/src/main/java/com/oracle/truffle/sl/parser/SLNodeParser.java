@@ -513,14 +513,14 @@ public class SLNodeParser extends SLBaseParser {
         public SLExpressionNode visitMemberAssign(MemberAssignContext ctx) {
             final SLExpressionNode result;
             if (assignmentName == null) {
-                semErr(ctx.expression().start, "invalid assignment target");
+                semErr(ctx.or_term().start, "invalid assignment target");
                 result = null;
             } else if (assignmentReceiver == null) {
-                SLExpressionNode valueNode = expressionVisitor.visitExpression(ctx.expression());
+                SLExpressionNode valueNode = expressionVisitor.visitOr_term(ctx.or_term());
                 result = createAssignment((SLStringLiteralNode) assignmentName, valueNode, null);
             } else {
                 // create write property
-                SLExpressionNode valueNode = expressionVisitor.visitExpression(ctx.expression());
+                SLExpressionNode valueNode = expressionVisitor.visitOr_term(ctx.or_term());
 
                 result = SLWritePropertyNodeGen.create(assignmentReceiver, assignmentName, valueNode);
 
