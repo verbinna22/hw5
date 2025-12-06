@@ -164,8 +164,8 @@ member_expression
 // lexer
 
 WS : [ \t\r\n\u000C]+ -> skip;
-COMMENT : '/*' .*? '*/' -> skip;
-LINE_COMMENT : '//' ~[\r\n]* -> skip;
+COMMENT : '(*' .*? '*)' -> skip;
+LINE_COMMENT : '--' ~[\r\n]* -> skip;
 
 OP_OR: '!!';
 OP_AND: '&&';
