@@ -5,22 +5,22 @@
 
 func doIt(a) {
   var hello;
-  println("Initial stack trace:");
-  println(stacktrace());
+  write("Initial stack trace:");
+  write(stacktrace());
   
   hello := 123;
-  println("After 123 assignment:");
-  println(stacktrace());
+  write("After 123 assignment:");
+  write(stacktrace());
   
   helloEqualsWorld();
-  println("After hello assignment:");
-  println(stacktrace())
+  write("After hello assignment:");
+  write(stacktrace())
   
 --  readln()@
 }
 
 var i;
-println(45 % 2);
+write(45 % 2);
 i := 0;
 while (i < 10) {
   doIt(i);

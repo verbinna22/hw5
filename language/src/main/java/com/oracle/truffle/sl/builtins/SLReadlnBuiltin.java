@@ -57,22 +57,14 @@ import com.oracle.truffle.sl.runtime.SLStrings;
 /**
  * Builtin function that reads a String from the {@link SLContext#getInput() standard input}.
  */
-@NodeInfo(shortName = "readln")
+@NodeInfo(shortName = "read")
 public abstract class SLReadlnBuiltin extends SLBuiltinNode {
 
     @Specialization
-    public TruffleString readln(@Cached TruffleString.FromJavaStringNode fromJavaStringNode,
+    public long read(@Cached TruffleString.FromJavaStringNode fromJavaStringNode,
                     @Bind SLContext context) {
-        TruffleString result = fromJavaStringNode.execute(doRead(context.getInput()), SLLanguage.STRING_ENCODING);
-        if (result == null) {
-            /*
-             * We do not have a sophisticated end of file handling, so returning an empty string is
-             * a reasonable alternative. Note that the Java null value should never be used, since
-             * it can interfere with the specialization logic in generated source code.
-             */
-            result = SLStrings.EMPTY_STRING;
-        }
-        return result;
+        var result = doRead(context.getInput());
+        return Long.parseLong(result);
     }
 
     @TruffleBoundary
