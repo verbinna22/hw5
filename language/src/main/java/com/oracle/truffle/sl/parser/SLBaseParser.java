@@ -248,8 +248,11 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
         List<Token> variables = new ArrayList<>();
         for (var definition : ctx.def()) {
-            for (var variable : definition.varSingleLineDef().varSingleDef()) {
-                variables.add(variable.IDENTIFIER().getSymbol());
+            var variableContext = definition.varSingleLineDef();
+            if (variableContext != null) {
+                for (var variable : variableContext.varSingleDef()) {
+                    variables.add(variable.IDENTIFIER().getSymbol());
+                }
             }
         }
         for (Token tok : variables) {

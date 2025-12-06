@@ -81,6 +81,7 @@ varSingleLineDef
 
 def
     : varSingleLineDef
+    | function
     ;
 
 block
