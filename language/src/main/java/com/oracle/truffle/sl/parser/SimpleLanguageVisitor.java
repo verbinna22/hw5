@@ -59,11 +59,11 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDebugger_statement(SimpleLanguageParser.Debugger_statementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#while_statement}.
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#while_expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitWhile_statement(SimpleLanguageParser.While_statementContext ctx);
+	T visitWhile_expression(SimpleLanguageParser.While_expressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#if_expression}.
 	 * @param ctx the parse tree
@@ -106,6 +106,20 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitTerm(SimpleLanguageParser.TermContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code IfExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code WhileExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileExpr(SimpleLanguageParser.WhileExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code NameAccess}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.

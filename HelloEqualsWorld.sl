@@ -23,5 +23,5 @@ func main() {
   while (i < 10) {
     doIt(i);
     i := i + 1;
-  }
+  };
 }

@@ -79,8 +79,7 @@ block
 
 
 statement
-	: while_statement
-	| break_statement
+	: break_statement
 	| continue_statement
 	| return_statement
 	| expression_statement
@@ -121,9 +120,7 @@ return_statement
 
 
 expression
-	: if_expression
-	| while_expression
-	| logic_term (OP_OR logic_term)*
+	: logic_term (OP_OR logic_term)*
 	;
 
 
@@ -148,7 +145,9 @@ term
 
 
 factor
-	: IDENTIFIER member_expression* # NameAccess
+	: if_expression                 # IfExpr
+    | while_expression              # WhileExpr
+	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral
 	| '(' expression ')'			# ParenExpression

@@ -38,7 +38,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.sl.nodes.controlflow;
+package com.oracle.truffle.sl.nodes.expression;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -49,12 +49,15 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
+import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
+import com.oracle.truffle.sl.nodes.controlflow.SLBreakException;
+import com.oracle.truffle.sl.nodes.controlflow.SLContinueException;
 import com.oracle.truffle.sl.nodes.util.SLToBooleanNodeGen;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 
 /**
- * The loop body of a {@link SLWhileNode while loop}. A Truffle framework {@link LoopNode} between
- * the {@link SLWhileNode} and {@link SLWhileRepeatingNode} allows Truffle to perform loop
+ * The loop body of a {@link while loop}. A Truffle framework {@link LoopNode} between
+ * the {@link } and {@link SLWhileRepeatingNode} allows Truffle to perform loop
  * optimizations, for example, compile just the loop body for long running loops.
  */
 public final class SLWhileRepeatingNode extends Node implements RepeatingNode {

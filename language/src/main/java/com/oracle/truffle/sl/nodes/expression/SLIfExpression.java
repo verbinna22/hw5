@@ -2,6 +2,7 @@ package com.oracle.truffle.sl.nodes.expression;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
@@ -10,6 +11,7 @@ import com.oracle.truffle.sl.nodes.controlflow.SLBlockNode;
 import com.oracle.truffle.sl.nodes.util.SLToBooleanNodeGen;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 
+@NodeInfo(shortName = "if", description = "The node implementing a condional statement")
 public final class SLIfExpression extends SLExpressionNode {
     @Child private SLExpressionNode conditionNode;
 

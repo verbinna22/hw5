@@ -69,7 +69,6 @@ import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLWhileNode;
 import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
 import com.oracle.truffle.sl.nodes.local.SLReadLocalVariableNodeGen;
 import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNodeGen;
@@ -96,7 +95,6 @@ import com.oracle.truffle.sl.parser.SimpleLanguageParser.Return_statementContext
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.StatementContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.StringLiteralContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.TermContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.While_statementContext;
 
 /**
  * SL AST visitor that parses to Truffle ASTs.
@@ -244,22 +242,6 @@ public class SLNodeParser extends SLBaseParser {
             return continueNode;
         }
 
-        @Override
-        public SLStatementNode visitWhile_statement(While_statementContext ctx) {
-            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
-
-            loopDepth++;
-            SLStatementNode bodyNode = visitBlock(ctx.body);
-            loopDepth--;
-
-            conditionNode.addStatementTag();
-            final int start = ctx.w.getStartIndex();
-            final int end = bodyNode.getSourceEndIndex();
-            final SLWhileNode whileNode = new SLWhileNode(conditionNode, bodyNode);
-            whileNode.setSourceSection(start, end - start);
-            return whileNode;
-        }
-
 
         @Override
         public SLStatementNode visitReturn_statement(Return_statementContext ctx) {
@@ -296,10 +278,25 @@ public class SLNodeParser extends SLBaseParser {
 
     private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
         @Override
+        public SLExpressionNode visitWhile_expression(SimpleLanguageParser.While_expressionContext ctx) {
+            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
+            loopDepth++;
+            SLStatementNode bodyNode = statementVisitor.visitBlock(ctx.body);
+            loopDepth--;
+
+            conditionNode.addStatementTag();
+            final int start = ctx.w.getStartIndex();
+            final int end = bodyNode.getSourceEndIndex();
+            final SLWhileExpression whileNode = new SLWhileExpression(conditionNode, bodyNode);
+            whileNode.setSourceSection(start, end - start);
+            return whileNode;
+        }
+
+        @Override
         public SLExpressionNode visitIf_expression(SimpleLanguageParser.If_expressionContext ctx) {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
-            SLStatementNode thenPartNode = visitBlock(ctx.then);
-            SLStatementNode elsePartNode = ctx.alt == null ? null : visitBlock(ctx.alt);
+            SLStatementNode thenPartNode = expressionVisitor.visitBlock(ctx.then);
+            SLStatementNode elsePartNode = ctx.alt == null ? null : expressionVisitor.visitBlock(ctx.alt);
 
             conditionNode.addStatementTag();
             final int start = ctx.i.getStartIndex();
@@ -614,7 +611,7 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     private static boolean isHaltInCondition(SLStatementNode statement) {
-        return (statement instanceof SLIfExpression) || (statement instanceof SLWhileNode);
+        return (statement instanceof SLIfExpression) || (statement instanceof SLWhileExpression);
     }
 
     private static void srcFromToken(SLStatementNode node, Token token) {
