@@ -19,12 +19,11 @@ func doIt(a) {
 --  readln()@
 }
 
-func main() {
-  var i;
-  println(45 % 2);
-  i := 0;
-  while (i < 10) {
-    doIt(i);
-    i := i + 1
-  }
+var i;
+println(45 % 2);
+i := 0;
+while (i < 10) {
+  doIt(i);
+  i := i + 1
 }
+

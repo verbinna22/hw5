@@ -234,6 +234,12 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
+    protected final void enterMainFunction() {
+        assert curScope == null;
+        curScope = new LocalScope();
+        totalLocals = 0;
+    }
+
     protected final void exitFunction() {
         curScope = curScope.parent;
         assert curScope == null;

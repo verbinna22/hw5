@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.oracle.truffle.sl.nodes.expression.*;
+import com.oracle.truffle.sl.runtime.SLStrings;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -118,6 +119,50 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     @Override
+    public Void visitBlock(SimpleLanguageParser.BlockContext ctx) { // add main
+        TruffleString functionName = SLStrings.MAIN;
+
+        var exprStart = ctx.expression().getStart();
+        int functionStartPos;
+        if (exprStart != null) {
+            functionStartPos = exprStart.getStartIndex();
+        } else {
+            functionStartPos = 0;
+        }
+        frameDescriptorBuilder = FrameDescriptor.newBuilder();
+        List<SLExpressionNode> methodNodes = new ArrayList<>();
+
+        enterMainFunction();
+
+        SLBlockExpression bodyNode = (SLBlockExpression) statementVisitor.visitBlock(ctx);
+
+        exitFunction();
+
+        methodNodes.addAll(bodyNode.getExpression());
+        final int bodyEndPos = bodyNode.getSourceEndIndex();
+        final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
+        final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
+        methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
+
+        final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
+        functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
+
+        final SLRootNode rootNode = new SLAstRootNode(language, frameDescriptorBuilder.build(), functionBodyNode, functionSrc, functionName);
+        functions.put(functionName, rootNode.getCallTarget());
+
+        frameDescriptorBuilder = null;
+
+        for (var definition : ctx.def()) {
+            var f = definition.function();
+            if (f != null) {
+                System.out.println(f.IDENTIFIER(0).getText());
+                SLNodeParser.this.visitFunction(f);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Void visitFunction(FunctionContext ctx) {
 
         Token nameToken = ctx.IDENTIFIER(0).getSymbol();
@@ -173,6 +218,7 @@ public class SLNodeParser extends SLBaseParser {
     private class SLStatementVisitor extends SimpleLanguageBaseVisitor<SLStatementNode> {
         @Override
         public SLStatementNode visitBlock(BlockContext ctx) {
+
             List<TruffleString> newLocals = enterBlock(ctx);
 
             for (TruffleString newLocal : newLocals) {

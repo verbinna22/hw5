@@ -61,7 +61,7 @@ grammar SimpleLanguage;
 
 
 simplelanguage
-	: function function* EOF
+	: block EOF
 	;
 
 
