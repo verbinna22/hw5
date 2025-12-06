@@ -71,10 +71,20 @@ function
 		'{' body=block '}'
 	;
 
+varSingleDef
+    : IDENTIFIER ('=' val=or_term)?
+    ;
 
+varSingleLineDef
+    : 'var' varSingleDef (',' varSingleDef)* ';'
+    ;
+
+def
+    : varSingleLineDef
+    ;
 
 block
-	: expression
+	: def* expression
 	;
 
 

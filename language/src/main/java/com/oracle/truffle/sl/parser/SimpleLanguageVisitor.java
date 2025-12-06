@@ -23,6 +23,24 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunction(SimpleLanguageParser.FunctionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#varSingleDef}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVarSingleDef(SimpleLanguageParser.VarSingleDefContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#varSingleLineDef}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVarSingleLineDef(SimpleLanguageParser.VarSingleLineDefContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#def}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDef(SimpleLanguageParser.DefContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

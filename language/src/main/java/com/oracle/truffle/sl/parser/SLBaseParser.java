@@ -243,10 +243,16 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         List<TruffleString> result = new ArrayList<>();
         curScope = new LocalScope(curScope);
 
-        FindLocalsVisitor findLocals = new FindLocalsVisitor();
-        findLocals.visitBlock(ctx);
+//        FindLocalsVisitor findLocals = new FindLocalsVisitor();
+//        findLocals.visitBlock(ctx);
 
-        for (Token tok : findLocals.results) {
+        List<Token> variables = new ArrayList<>();
+        for (var definition : ctx.def()) {
+            for (var variable : definition.varSingleLineDef().varSingleDef()) {
+                variables.add(variable.IDENTIFIER().getSymbol());
+            }
+        }
+        for (Token tok : variables) {
             TruffleString name = asTruffleString(tok, false);
             if (!curScope.localDeclared(name)) {
                 curScope.declareLocal(name);

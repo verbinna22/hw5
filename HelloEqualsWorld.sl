@@ -4,6 +4,7 @@
  *)
 
 func doIt(a) {
+  var hello;
   println("Initial stack trace:");
   println(stacktrace());
   
@@ -19,6 +20,7 @@ func doIt(a) {
 }
 
 func main() {
+  var i;
   println(45 % 2);
   i := 0;
   while (i < 10) {
