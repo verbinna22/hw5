@@ -134,7 +134,7 @@ public class SLNodeParser extends SLBaseParser {
 
         enterMainFunction();
 
-        SLBlockExpression bodyNode = (SLBlockExpression) statementVisitor.visitBlock(ctx);
+        SLBlockExpression bodyNode = (SLBlockExpression) expressionVisitor.visitBlock(ctx);
 
         exitFunction();
 
@@ -187,7 +187,7 @@ public class SLNodeParser extends SLBaseParser {
             methodNodes.add(assignment);
         }
 
-        SLBlockExpression bodyNode = (SLBlockExpression) statementVisitor.visitBlock(ctx.body);
+        SLBlockExpression bodyNode = (SLBlockExpression) expressionVisitor.visitBlock(ctx.body);
 
         exitFunction();
 
@@ -216,7 +216,69 @@ public class SLNodeParser extends SLBaseParser {
 
     private class SLStatementVisitor extends SimpleLanguageBaseVisitor<SLStatementNode> {
         @Override
-        public SLStatementNode visitBlock(BlockContext ctx) {
+        public SLStatementNode visitDebugger_statement(Debugger_statementContext ctx) {
+            final SLDebuggerNode debuggerNode = new SLDebuggerNode();
+            srcFromToken(debuggerNode, ctx.d);
+            return debuggerNode;
+        }
+
+        @Override
+        public SLStatementNode visitBreak_statement(Break_statementContext ctx) {
+            if (loopDepth == 0) {
+                semErr(ctx.b, "break used outside of loop");
+            }
+            final SLBreakNode breakNode = new SLBreakNode();
+            srcFromToken(breakNode, ctx.b);
+            return breakNode;
+        }
+
+        @Override
+        public SLStatementNode visitContinue_statement(Continue_statementContext ctx) {
+            if (loopDepth == 0) {
+                semErr(ctx.c, "continue used outside of loop");
+            }
+            final SLContinueNode continueNode = new SLContinueNode();
+            srcFromToken(continueNode, ctx.c);
+            return continueNode;
+        }
+
+
+        @Override
+        public SLStatementNode visitReturn_statement(Return_statementContext ctx) {
+
+            final SLExpressionNode valueNode;
+            if (ctx.expression() != null) {
+                valueNode = expressionVisitor.visitExpression(ctx.expression());
+            } else {
+                valueNode = null;
+            }
+
+            final int start = ctx.r.getStartIndex();
+            final int length = valueNode == null ? ctx.r.getText().length() : valueNode.getSourceEndIndex() - start;
+            final SLReturnNode returnNode = new SLReturnNode(valueNode);
+            returnNode.setSourceSection(start, length);
+            return returnNode;
+        }
+
+        @Override
+        public SLStatementNode visitStatement(StatementContext ctx) {
+            return visit(ctx.getChild(0));
+        }
+
+        @Override
+        public SLStatementNode visitExpression_statement(Expression_statementContext ctx) {
+            return expressionVisitor.visitExpression(ctx.expression());
+        }
+
+        @Override
+        public SLStatementNode visitChildren(RuleNode arg0) {
+            throw new UnsupportedOperationException("node: " + arg0.getClass().getSimpleName());
+        }
+    }
+
+    private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
+        @Override
+        public SLExpressionNode visitBlock(BlockContext ctx) {
 
             List<TruffleString> newLocals = enterBlock(ctx);
 
@@ -286,72 +348,10 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
-        public SLStatementNode visitDebugger_statement(Debugger_statementContext ctx) {
-            final SLDebuggerNode debuggerNode = new SLDebuggerNode();
-            srcFromToken(debuggerNode, ctx.d);
-            return debuggerNode;
-        }
-
-        @Override
-        public SLStatementNode visitBreak_statement(Break_statementContext ctx) {
-            if (loopDepth == 0) {
-                semErr(ctx.b, "break used outside of loop");
-            }
-            final SLBreakNode breakNode = new SLBreakNode();
-            srcFromToken(breakNode, ctx.b);
-            return breakNode;
-        }
-
-        @Override
-        public SLStatementNode visitContinue_statement(Continue_statementContext ctx) {
-            if (loopDepth == 0) {
-                semErr(ctx.c, "continue used outside of loop");
-            }
-            final SLContinueNode continueNode = new SLContinueNode();
-            srcFromToken(continueNode, ctx.c);
-            return continueNode;
-        }
-
-
-        @Override
-        public SLStatementNode visitReturn_statement(Return_statementContext ctx) {
-
-            final SLExpressionNode valueNode;
-            if (ctx.expression() != null) {
-                valueNode = expressionVisitor.visitExpression(ctx.expression());
-            } else {
-                valueNode = null;
-            }
-
-            final int start = ctx.r.getStartIndex();
-            final int length = valueNode == null ? ctx.r.getText().length() : valueNode.getSourceEndIndex() - start;
-            final SLReturnNode returnNode = new SLReturnNode(valueNode);
-            returnNode.setSourceSection(start, length);
-            return returnNode;
-        }
-
-        @Override
-        public SLStatementNode visitStatement(StatementContext ctx) {
-            return visit(ctx.getChild(0));
-        }
-
-        @Override
-        public SLStatementNode visitExpression_statement(Expression_statementContext ctx) {
-            return expressionVisitor.visitExpression(ctx.expression());
-        }
-
-        @Override
-        public SLStatementNode visitChildren(RuleNode arg0) {
-            throw new UnsupportedOperationException("node: " + arg0.getClass().getSimpleName());
-        }
-    }
-
-    private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
-        @Override
         public SLExpressionNode visitWhile_expression(SimpleLanguageParser.While_expressionContext ctx) {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
             loopDepth++;
-            SLStatementNode bodyNode = statementVisitor.visitBlock(ctx.body);
+            SLStatementNode bodyNode = expressionVisitor.visitBlock(ctx.body);
             loopDepth--;
 
             conditionNode.addStatementTag();
