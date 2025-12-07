@@ -140,7 +140,8 @@ public final class SLEvalRootNode extends RootNode {
             for (int i = 0; i < arguments.length; i++) {
                 arguments[i] = SLContext.fromForeignValue(arguments[i]);
             }
-            return mainCallNode.call(arguments);
+            mainCallNode.call(arguments);
+            return SLNull.SINGLETON;
         }
     }
 
