@@ -23,9 +23,9 @@ var i;
 var k = 0;
 var j = k * 15 * 15;
 i := 0;
-while (i < 10) {
+while i < 10 do
   doIt(i);
   i := i + 1
-};
+od;
 0
 

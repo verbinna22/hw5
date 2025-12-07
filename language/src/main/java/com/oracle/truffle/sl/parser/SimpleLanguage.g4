@@ -114,8 +114,8 @@ debugger_statement
 	;
 
 while_expression
-    : w='while' '(' condition=expression ')'
-    		'{' body=block '}'
+    : w='while' condition=expression
+    		'do' body=block 'od'
     	;
 
 if_expression
