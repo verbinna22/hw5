@@ -48,6 +48,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.oracle.truffle.api.staticobject.StaticProperty;
+import com.oracle.truffle.api.staticobject.StaticShape;
 import org.graalvm.polyglot.Context;
 
 import com.oracle.truffle.api.CallTarget;
@@ -111,6 +113,7 @@ public final class SLContext {
     private final BufferedReader input;
     private final PrintWriter output;
     private final SLFunctionRegistry functionRegistry;
+//    private final GlobalsObject globalsObject = new GlobalsObject();
     private final AllocationReporter allocationReporter;
     private final List<SLFunction> shutdownHooks = new ArrayList<>();
 
@@ -126,6 +129,24 @@ public final class SLContext {
             installBuiltin(builtin);
         }
     }
+
+//    public interface MyStorage { TODO
+//        Object getMyGlobalVar();
+//        void setMyGlobalVar(Object value);
+//    }
+//
+//    public StaticProperty globalVar;
+//    public Object getGlobal(TruffleString name) {
+//        Object result = globalsObject.globals.get(name);
+//        if (result == null) {
+//            StaticShape.Builder builder = StaticShape.newBuilder(this.language);
+//            builder.property(globalVar, Object.class, false);
+//            StaticShape<MyStorage> shape = builder.build();
+//            result = shape.getFactory().getMyGlobalVar();
+//            globalsObject.globals.put(name, result);
+//        }
+//        return result;
+//    }
 
     /**
      * Patches the {@link SLContext} to use a new {@link Env}. The method is called during the

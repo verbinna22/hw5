@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.oracle.truffle.sl.nodes.expression.*;
+import com.oracle.truffle.sl.nodes.local.*;
+import com.oracle.truffle.sl.runtime.SLContext;
 import com.oracle.truffle.sl.runtime.SLStrings;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -69,9 +71,6 @@ import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
-import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
-import com.oracle.truffle.sl.nodes.local.SLReadLocalVariableNodeGen;
-import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNodeGen;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ArithmeticContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.BlockContext;
@@ -721,7 +720,7 @@ public class SLNodeParser extends SLBaseParser {
         public SLExpressionNode visitMemberCall(MemberCallContext ctx) {
             List<SLExpressionNode> parameters = new ArrayList<>();
             if (receiver == null) {
-                receiver = createRead(assignmentName);
+                receiver = createCallRead(assignmentName);
             }
 
             for (ExpressionContext child : ctx.expression()) {
@@ -822,8 +821,17 @@ public class SLNodeParser extends SLBaseParser {
         if (frameSlot != -1) {
             result = SLReadLocalVariableNodeGen.create(frameSlot);
         } else {
-            result = SLFunctionLiteralNodeGen.create(new SLStringLiteralNode(name));
+            throw new RuntimeException("not found");
         }
+        result.setSourceSection(nameTerm.getSourceCharIndex(), nameTerm.getSourceLength());
+        result.addExpressionTag();
+        return result;
+    }
+
+    private SLExpressionNode createCallRead(SLExpressionNode nameTerm) {
+        final TruffleString name = ((SLStringLiteralNode) nameTerm).executeGeneric(null);
+        final SLExpressionNode result;
+        result = SLFunctionLiteralNodeGen.create(new SLStringLiteralNode(name));
         result.setSourceSection(nameTerm.getSourceCharIndex(), nameTerm.getSourceLength());
         result.addExpressionTag();
         return result;
@@ -834,9 +842,14 @@ public class SLNodeParser extends SLBaseParser {
         TruffleString name = assignmentName.executeGeneric(null);
 
         int frameSlot = getLocalIndex(name);
-        assert frameSlot != -1;
-        boolean newVariable = initializeLocal(name);
-        SLExpressionNode result = SLWriteLocalVariableNodeGen.create(valueNode, frameSlot, assignmentName, newVariable);
+        SLExpressionNode result;
+        if (frameSlot == -1) {
+            throw new RuntimeException("not found");
+        } else {
+            assert frameSlot != -1;
+            boolean newVariable = initializeLocal(name);
+            result = SLWriteLocalVariableNodeGen.create(valueNode, frameSlot, assignmentName, newVariable);
+        }
 
         assert index != null || valueNode.hasSource();
 
