@@ -118,6 +118,11 @@ while_expression
     		'do' body=block 'od'
     	;
 
+do_while_expression
+    : d='do' body=block
+        'while' condition=expression 'od'
+    ;
+
 elifSequence : el='elif' cond=expression 'then' elif=block ;
 
 if_expression
@@ -168,6 +173,7 @@ factor
 	: if_expression                 # IfExpr
 	| skip_expression               # SkipExpr
     | while_expression              # WhileExpr
+    | do_while_expression           # DoWhileExpr
 	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral

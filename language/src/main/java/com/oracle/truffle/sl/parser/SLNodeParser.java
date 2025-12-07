@@ -279,7 +279,6 @@ public class SLNodeParser extends SLBaseParser {
     private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
         @Override
         public SLExpressionNode visitBlock(BlockContext ctx) {
-
             List<TruffleString> newLocals = enterBlock(ctx);
 
             for (TruffleString newLocal : newLocals) {
@@ -369,6 +368,77 @@ public class SLNodeParser extends SLBaseParser {
             final SLWhileExpression whileNode = new SLWhileExpression(conditionNode, bodyNode);
             whileNode.setSourceSection(start, end - start);
             return whileNode;
+        }
+
+        @Override
+        public SLExpressionNode visitDo_while_expression(SimpleLanguageParser.Do_while_expressionContext ctx) {
+            List<TruffleString> newLocals = enterBlock(ctx.body);
+
+            for (TruffleString newLocal : newLocals) {
+                frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, newLocal, null);
+            }
+
+
+            int startPos;
+            int endPos;
+
+            var startToken = ctx.getStart();
+            var endToken = ctx.getStop();
+            if (startToken == null || endToken == null) {
+                startPos = endPos = 0;
+            } else {
+                startPos = startToken.getStartIndex();
+                endPos = endToken.getStopIndex();
+            }
+
+            List<SLExpressionNode> bodyNodes = new ArrayList<>();
+            // ---
+            loopDepth++;
+            SLStatementNode bodyExprNode = expressionVisitor.visitExpression(ctx.body.expression());
+            loopDepth--;
+            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
+
+            conditionNode.addStatementTag();
+            final int start = ctx.d.getStartIndex();
+            final int end = bodyExprNode.getSourceEndIndex();
+            final SLDoWhileExpression doWhileNode = new SLDoWhileExpression(conditionNode, bodyExprNode);
+            doWhileNode.setSourceSection(start, end - start);
+            // ---
+
+            bodyNodes.add(doWhileNode);
+
+            for (var definition : ctx.body.def().reversed()) {
+                var variableDefinition = definition.varSingleLineDef();
+                if (variableDefinition != null) {
+                    for (var variable : variableDefinition.varSingleDef().reversed()) {
+                        if (variable.or_term() != null) {
+                            var varToken = variable.IDENTIFIER().getSymbol();
+                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var result = createAssignment(createString(varToken, false), valueNode, null);
+                            bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                        }
+                    }
+                }
+            }
+
+            exitBlock();
+
+            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+            flattenBlocks(bodyNodes, flattenedNodes);
+            int n = flattenedNodes.size();
+            for (int i = 0; i < n; i++) {
+                SLStatementNode statement = flattenedNodes.get(i);
+                if (statement.hasSource() && !isHaltInCondition(statement)) {
+                    statement.addStatementTag();
+                }
+            }
+            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+            if (startPos != 0 || endPos != 0) {
+                blockNode.setSourceSection(startPos, endPos - startPos);
+            } else {
+                blockNode.setUnavailableSourceSection();
+            }
+            return blockNode;
         }
 
         @Override

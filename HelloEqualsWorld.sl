@@ -22,7 +22,14 @@ func doIt(a) {
 var i;
 var k = 0;
 var j = k * 15 * 15;
+
 i := 0;
+
+do
+  var s = 5;
+  s := s - 1;
+  write(s)
+while s > 0 od;
 while i < 10 do
   skip;
   write("begin ifs");
