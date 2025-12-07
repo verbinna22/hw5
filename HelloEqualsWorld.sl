@@ -24,6 +24,7 @@ var k = 0;
 var j = k * 15 * 15;
 i := 0;
 while i < 10 do
+  skip;
   write("begin ifs");
   k := if (i < 4) then
     101

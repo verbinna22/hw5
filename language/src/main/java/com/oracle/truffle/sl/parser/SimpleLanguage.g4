@@ -160,9 +160,13 @@ term
 	: factor (OP_MUL factor)*
 	;
 
+skip_expression
+    : 'skip'
+    ;
 
 factor
 	: if_expression                 # IfExpr
+	| skip_expression               # SkipExpr
     | while_expression              # WhileExpr
 	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral

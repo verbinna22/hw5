@@ -137,12 +137,25 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTerm(SimpleLanguageParser.TermContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#skip_expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSkip_expression(SimpleLanguageParser.Skip_expressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code IfExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code SkipExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSkipExpr(SimpleLanguageParser.SkipExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code WhileExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.

@@ -348,6 +348,15 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitSkip_expression(SimpleLanguageParser.Skip_expressionContext ctx) {
+            var skip = new SLSkipExpression();
+            int start = ctx.getStart().getStartIndex();
+            int length = ctx.getStop().getStopIndex() - start;
+            skip.setSourceSection(start, length);
+            return skip;
+        }
+
+        @Override
         public SLExpressionNode visitWhile_expression(SimpleLanguageParser.While_expressionContext ctx) {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
             loopDepth++;
