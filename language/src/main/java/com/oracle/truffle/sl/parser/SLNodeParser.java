@@ -299,7 +299,11 @@ public class SLNodeParser extends SLBaseParser {
 
             List<SLExpressionNode> bodyNodes = new ArrayList<>();
 
-            bodyNodes.add(expressionVisitor.visitExpression(ctx.expression()));
+            if (ctx.expression() != null) {
+                bodyNodes.add(expressionVisitor.visitExpression(ctx.expression()));
+            } else {
+                bodyNodes.add(new SLSkipExpression());
+            }
 
             for (var definition : ctx.def().reversed()) {
                 var variableDefinition = definition.varSingleLineDef();
@@ -327,10 +331,10 @@ public class SLNodeParser extends SLBaseParser {
                 }
             }
             SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
-            if (startPos != 0 || endPos != 0) {
+            if (endPos - startPos > 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
-                blockNode.setUnavailableSourceSection();
+                blockNode.setSourceSection(startPos, 0);
             }
             return blockNode;
         }
@@ -393,7 +397,7 @@ public class SLNodeParser extends SLBaseParser {
             List<SLExpressionNode> bodyNodes = new ArrayList<>();
             // ---
             loopDepth++;
-            SLStatementNode bodyExprNode = expressionVisitor.visitExpression(ctx.body.expression());
+            SLStatementNode bodyExprNode = (ctx.body.expression() == null) ? new SLSkipExpression() : expressionVisitor.visitExpression(ctx.body.expression());
             loopDepth--;
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
 
@@ -401,7 +405,11 @@ public class SLNodeParser extends SLBaseParser {
             final int start = ctx.d.getStartIndex();
             final int end = bodyExprNode.getSourceEndIndex();
             final SLDoWhileExpression doWhileNode = new SLDoWhileExpression(conditionNode, bodyExprNode);
-            doWhileNode.setSourceSection(start, end - start);
+            if (end - start > 0) {
+                doWhileNode.setSourceSection(start, end - start);
+            } else {
+                doWhileNode.setSourceSection(start, 0);
+            }
             // ---
 
             bodyNodes.add(doWhileNode);
@@ -432,10 +440,10 @@ public class SLNodeParser extends SLBaseParser {
                 }
             }
             SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
-            if (startPos != 0 || endPos != 0) {
+            if (endPos - startPos > 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
-                blockNode.setUnavailableSourceSection();
+                blockNode.setSourceSection(startPos, 0);
             }
             return blockNode;
         }
@@ -463,7 +471,7 @@ public class SLNodeParser extends SLBaseParser {
 
             List<SLExpressionNode> bodyNodes = new ArrayList<>();
             // ---
-            SLExpressionNode initNode = expressionVisitor.visitExpression(ctx.init.expression());
+            SLExpressionNode initNode = (ctx.init.expression() == null) ? new SLSkipExpression() : expressionVisitor.visitExpression(ctx.init.expression());
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
             loopDepth++;
             SLExpressionNode bodyExprNode = expressionVisitor.visitBlock(ctx.body);
@@ -507,10 +515,10 @@ public class SLNodeParser extends SLBaseParser {
                 }
             }
             SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
-            if (startPos != 0 || endPos != 0) {
+            if (endPos - startPos > 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
-                blockNode.setUnavailableSourceSection();
+                blockNode.setSourceSection(startPos, 0);
             }
             return blockNode;
         }

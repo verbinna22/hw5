@@ -85,7 +85,7 @@ def
     ;
 
 block
-	: def* expression
+	: def* expression?
 	;
 
 
