@@ -694,11 +694,7 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public SLExpressionNode visitParenExpression(ParenExpressionContext ctx) {
-
-            SLExpressionNode expressionNode = visitExpression(ctx.expression());
-            if (expressionNode == null) {
-                return null;
-            }
+            SLExpressionNode expressionNode = visitBlock(ctx.block());
 
             int start = ctx.start.getStartIndex();
             int length = ctx.stop.getStopIndex() - start + 1;

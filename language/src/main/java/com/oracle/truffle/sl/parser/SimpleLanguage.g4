@@ -183,7 +183,7 @@ factor
 	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral
-	| '(' expression ')'			# ParenExpression
+	| '(' block ')'			# ParenExpression
 	;
 
 

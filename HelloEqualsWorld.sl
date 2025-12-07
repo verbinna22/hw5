@@ -26,8 +26,17 @@ func one() {
 var i;
 var k = 0;
 var j = k * 15 * 15;
+var ijk = 11;
 
 i := 0;
+write("ijk test");
+write(ijk);
+(
+var ijk = 0;
+write(ijk)
+);
+write(ijk);
+write("ijk test end");
 
 write(one() + 2);
 

@@ -1549,8 +1549,8 @@ public class SimpleLanguageParser extends Parser {
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class ParenExpressionContext extends FactorContext {
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
+		public BlockContext block() {
+			return getRuleContext(BlockContext.class,0);
 		}
 		public ParenExpressionContext(FactorContext ctx) { copyFrom(ctx); }
 		@Override
@@ -1683,7 +1683,7 @@ public class SimpleLanguageParser extends Parser {
 				setState(230);
 				match(T__1);
 				setState(231);
-				expression();
+				block();
 				setState(232);
 				match(T__3);
 				}
@@ -1994,7 +1994,7 @@ public class SimpleLanguageParser extends Parser {
 		"\u00df\u0001\u0000\u0000\u0000\u00e1\u00e2\u0001\u0000\u0000\u0000\u00e2"+
 		"\u00eb\u0001\u0000\u0000\u0000\u00e3\u00e1\u0001\u0000\u0000\u0000\u00e4"+
 		"\u00eb\u0005&\u0000\u0000\u00e5\u00eb\u0005\'\u0000\u0000\u00e6\u00e7"+
-		"\u0005\u0002\u0000\u0000\u00e7\u00e8\u0003\"\u0011\u0000\u00e8\u00e9\u0005"+
+		"\u0005\u0002\u0000\u0000\u00e7\u00e8\u0003\n\u0005\u0000\u00e8\u00e9\u0005"+
 		"\u0004\u0000\u0000\u00e9\u00eb\u0001\u0000\u0000\u0000\u00ea\u00d8\u0001"+
 		"\u0000\u0000\u0000\u00ea\u00d9\u0001\u0000\u0000\u0000\u00ea\u00da\u0001"+
 		"\u0000\u0000\u0000\u00ea\u00db\u0001\u0000\u0000\u0000\u00ea\u00dc\u0001"+
