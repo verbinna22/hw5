@@ -69,23 +69,23 @@ public abstract class SLShortCircuitNode extends SLExpressionNode {
 
     @Override
     public final Object executeGeneric(VirtualFrame frame) {
-        return executeBoolean(frame);
+        return executeLong(frame);
     }
 
     @Override
-    public final boolean executeBoolean(VirtualFrame frame) {
-        boolean leftValue;
+    public final long executeLong(VirtualFrame frame) {
+        long leftValue;
         try {
-            leftValue = left.executeBoolean(frame);
+            leftValue = left.executeLong(frame);
         } catch (UnexpectedResultException e) {
             throw SLException.typeError(this, "toBoolean", e.getResult());
         }
-        boolean rightValue;
+        long rightValue;
         try {
             if (evaluateRightProfile.profile(isEvaluateRight(leftValue))) {
-                rightValue = right.executeBoolean(frame);
+                rightValue = right.executeLong(frame);
             } else {
-                rightValue = false;
+                rightValue = 0;
             }
         } catch (UnexpectedResultException e) {
             throw SLException.typeError(this, "toBoolean", e.getResult());
@@ -97,12 +97,12 @@ public abstract class SLShortCircuitNode extends SLExpressionNode {
      * This method is called after the left child was evaluated, but before the right child is
      * evaluated. The right child is only evaluated when the return value is {code true}.
      */
-    protected abstract boolean isEvaluateRight(boolean leftValue);
+    protected abstract boolean isEvaluateRight(long leftValue);
 
     /**
      * Calculates the result of the short circuit operation. If the right node is not evaluated then
      * <code>false</code> is provided.
      */
-    protected abstract boolean execute(boolean leftValue, boolean rightValue);
+    protected abstract long execute(long leftValue, long rightValue);
 
 }

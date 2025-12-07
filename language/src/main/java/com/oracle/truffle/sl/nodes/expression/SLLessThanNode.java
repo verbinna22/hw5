@@ -65,30 +65,30 @@ import com.oracle.truffle.sl.runtime.SLBigInteger;
 public abstract class SLLessThanNode extends SLBinaryNode {
 
     @Specialization
-    public static boolean doLong(long left, long right) {
-        return left < right;
+    public static long doLong(long left, long right) {
+        return (left < right) ? 1 : 0;
     }
 
     @Specialization
     @TruffleBoundary
-    public static boolean doSLBigInteger(SLBigInteger left, SLBigInteger right) {
-        return left.compareTo(right) < 0;
+    public static long doSLBigInteger(SLBigInteger left, SLBigInteger right) {
+        return (left.compareTo(right) < 0) ? 1 : 0;
     }
 
     @Specialization(replaces = "doSLBigInteger", guards = {"leftLibrary.fitsInBigInteger(left)", "rightLibrary.fitsInBigInteger(right)"}, limit = "3")
     @TruffleBoundary
-    public static boolean doInteropBigInteger(Object left, Object right,
+    public static long doInteropBigInteger(Object left, Object right,
                     @CachedLibrary("left") InteropLibrary leftLibrary,
                     @CachedLibrary("right") InteropLibrary rightLibrary) {
         try {
-            return leftLibrary.asBigInteger(left).compareTo(rightLibrary.asBigInteger(right)) < 0;
+            return (leftLibrary.asBigInteger(left).compareTo(rightLibrary.asBigInteger(right)) < 0) ? 1 : 0;
         } catch (UnsupportedMessageException e) {
             throw shouldNotReachHere(e);
         }
     }
 
     @Fallback
-    public static boolean typeError(Object left, Object right, @Bind Node node) {
+    public static long typeError(Object left, Object right, @Bind Node node) {
         throw SLException.typeError(node, "<", left, right);
     }
 

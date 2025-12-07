@@ -60,12 +60,17 @@ import com.oracle.truffle.sl.nodes.SLExpressionNode;
 public abstract class SLLogicalNotNode extends SLExpressionNode {
 
     @Specialization
-    public static boolean doBoolean(boolean value) {
-        return !value;
+    public static long doBoolean(boolean value) {
+        return value ? 0 : 1;
+    }
+
+    @Specialization
+    public static long doLong(long value) {
+        return (value != 0) ? 0 : 1;
     }
 
     @Fallback
-    public static boolean typeError(Object value, @Bind Node node) {
+    public static long typeError(Object value, @Bind Node node) {
         throw SLException.typeError(node, "!", value);
     }
 

@@ -80,7 +80,7 @@ public final class SLWhileRepeatingNode extends Node implements RepeatingNode {
     private final BranchProfile breakTaken = BranchProfile.create();
 
     public SLWhileRepeatingNode(SLExpressionNode conditionNode, SLStatementNode bodyNode) {
-        this.conditionNode = SLToBooleanNodeGen.create(SLUnboxNodeGen.create(conditionNode));
+        this.conditionNode = SLUnboxNodeGen.create(conditionNode);
         this.conditionNode.setSourceSection(conditionNode.getSourceCharIndex(), conditionNode.getSourceLength());
         this.bodyNode = bodyNode;
     }
@@ -118,7 +118,7 @@ public final class SLWhileRepeatingNode extends Node implements RepeatingNode {
              * The condition must evaluate to a boolean value, so we call the boolean-specialized
              * execute method.
              */
-            return conditionNode.executeBoolean(frame);
+            return conditionNode.executeLong(frame) != 0;
         } catch (UnexpectedResultException ex) {
             throw CompilerDirectives.shouldNotReachHere(ex);
         }

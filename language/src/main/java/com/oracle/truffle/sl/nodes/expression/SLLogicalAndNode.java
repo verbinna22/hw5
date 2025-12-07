@@ -58,8 +58,8 @@ public final class SLLogicalAndNode extends SLShortCircuitNode {
      * .
      */
     @Override
-    protected boolean isEvaluateRight(boolean left) {
-        return left;
+    protected boolean isEvaluateRight(long left) {
+        return left == 1;
     }
 
     /**
@@ -67,8 +67,8 @@ public final class SLLogicalAndNode extends SLShortCircuitNode {
      * the second parameter is not evaluated, <code>false</code> is provided.
      */
     @Override
-    protected boolean execute(boolean left, boolean right) {
-        return left && right;
+    protected long execute(long left, long right) {
+        return ((left != 0) && (right != 0)) ? 1 : 0;
     }
 
 }

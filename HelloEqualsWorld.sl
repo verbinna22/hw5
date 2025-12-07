@@ -19,11 +19,19 @@ func doIt(a) {
 --  readln()@
 }
 
+func one() {
+  1
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
 
 i := 0;
+
+write(one() + 2);
+
+if 1 then write("YES") else write("NO") fi;
 
 for var i = 0; var j; j := 1, i < 5, i := i + 1 do
   write(i);
@@ -34,6 +42,7 @@ do
   s := s - 1;
   write(s)
 while s > 0 od;
+write("OK");
 while i < 10 do
   skip;
   write("begin ifs");

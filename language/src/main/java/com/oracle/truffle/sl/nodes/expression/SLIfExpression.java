@@ -31,7 +31,7 @@ public final class SLIfExpression extends SLExpressionNode {
     private final CountingConditionProfile condition = CountingConditionProfile.create();
 
     public SLIfExpression(SLExpressionNode conditionNode, SLExpressionNode thenPartNode, SLExpressionNode elsePartNode) {
-        this.conditionNode = SLToBooleanNodeGen.create(SLUnboxNodeGen.create(conditionNode));
+        this.conditionNode = SLUnboxNodeGen.create(conditionNode);
         this.conditionNode.setSourceSection(conditionNode.getSourceCharIndex(), conditionNode.getSourceLength());
         this.thenPartNode = thenPartNode;
         this.elsePartNode = elsePartNode;
@@ -114,7 +114,7 @@ public final class SLIfExpression extends SLExpressionNode {
              * The condition must evaluate to a boolean value, so we call the boolean-specialized
              * execute method.
              */
-            return conditionNode.executeBoolean(frame);
+            return conditionNode.executeLong(frame) != 0;
         } catch (UnexpectedResultException ex) {
             throw CompilerDirectives.shouldNotReachHere(ex);
         }

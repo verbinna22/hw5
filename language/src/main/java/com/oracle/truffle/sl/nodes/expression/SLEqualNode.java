@@ -70,45 +70,45 @@ import com.oracle.truffle.sl.runtime.SLNull;
 public abstract class SLEqualNode extends SLBinaryNode {
 
     @Specialization
-    public static boolean doLong(long left, long right) {
-        return left == right;
+    public static long doLong(long left, long right) {
+        return (left == right) ? 1 : 0;
     }
 
     @Specialization
     @TruffleBoundary
-    public static boolean doBigNumber(SLBigInteger left, SLBigInteger right) {
-        return left.equals(right);
+    public static long doBigNumber(SLBigInteger left, SLBigInteger right) {
+        return (left.equals(right)) ? 1 : 0;
     }
 
     @Specialization
-    public static boolean doBoolean(boolean left, boolean right) {
-        return left == right;
+    public static long doBoolean(boolean left, boolean right) {
+        return (left == right) ? 1 : 0;
     }
 
     @Specialization
-    public static boolean doString(String left, String right) {
-        return left.equals(right);
+    public static long doString(String left, String right) {
+        return (left.equals(right)) ? 1 : 0;
     }
 
     @Specialization
-    public static boolean doTruffleString(TruffleString left, TruffleString right,
+    public static long doTruffleString(TruffleString left, TruffleString right,
                     @Cached TruffleString.EqualNode equalNode) {
-        return equalNode.execute(left, right, SLLanguage.STRING_ENCODING);
+        return (equalNode.execute(left, right, SLLanguage.STRING_ENCODING)) ? 1 : 0;
     }
 
     @Specialization
-    public static boolean doNull(SLNull left, SLNull right) {
+    public static long doNull(SLNull left, SLNull right) {
         /* There is only the singleton instance of SLNull, so we do not need equals(). */
-        return left == right;
+        return (left == right) ? 1 : 0;
     }
 
     @Specialization
-    public static boolean doFunction(SLFunction left, Object right) {
+    public static long doFunction(SLFunction left, Object right) {
         /*
          * Our function registry maintains one canonical SLFunction object per function name, so we
          * do not need equals().
          */
-        return left == right;
+        return (left == right) ? 1 : 0;
     }
 
     /*
@@ -126,7 +126,7 @@ public abstract class SLEqualNode extends SLBinaryNode {
      * replace the previous specializations, as they are still more efficient in the interpeter.
      */
     @Specialization(limit = "4")
-    public static boolean doGeneric(Object left, Object right,
+    public static long doGeneric(Object left, Object right,
                     @CachedLibrary("left") InteropLibrary leftInterop,
                     @CachedLibrary("right") InteropLibrary rightInterop) {
         /*
@@ -143,19 +143,19 @@ public abstract class SLEqualNode extends SLBinaryNode {
             } else if (leftInterop.isString(left) && rightInterop.isString(right)) {
                 return doString(leftInterop.asString(left), (rightInterop.asString(right)));
             } else if (leftInterop.isNull(left) && rightInterop.isNull(right)) {
-                return true;
+                return 1;
             } else if (leftInterop.fitsInLong(left) && rightInterop.fitsInLong(right)) {
                 return doLong(leftInterop.asLong(left), (rightInterop.asLong(right)));
             } else if (left instanceof SLBigInteger && right instanceof SLBigInteger) {
                 return doBigNumber((SLBigInteger) left, (SLBigInteger) right);
             } else if (leftInterop.hasIdentity(left) && rightInterop.hasIdentity(right)) {
-                return leftInterop.isIdentical(left, right, rightInterop);
+                return (leftInterop.isIdentical(left, right, rightInterop)) ? 1 : 0;
             } else {
                 /*
                  * We return false in good dynamic language manner. Stricter languages might throw
                  * an error here.
                  */
-                return false;
+                return 0;
             }
         } catch (UnsupportedMessageException e) {
             // this case must not happen as we always check interop types before converting
