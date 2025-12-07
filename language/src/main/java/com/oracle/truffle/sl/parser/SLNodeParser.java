@@ -365,8 +365,8 @@ public class SLNodeParser extends SLBaseParser {
         @Override
         public SLExpressionNode visitIf_expression(SimpleLanguageParser.If_expressionContext ctx) {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
-            SLStatementNode thenPartNode = expressionVisitor.visitBlock(ctx.then);
-            SLStatementNode elsePartNode = ctx.alt == null ? null : expressionVisitor.visitBlock(ctx.alt);
+            SLExpressionNode thenPartNode = expressionVisitor.visitBlock(ctx.then);
+            SLExpressionNode elsePartNode = ctx.alt == null ? null : expressionVisitor.visitBlock(ctx.alt);
             conditionNode.addStatementTag();
             final int end = ctx.f.getStopIndex();
             var elifSequence = ctx.elifSequence();

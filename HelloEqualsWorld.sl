@@ -25,6 +25,13 @@ var j = k * 15 * 15;
 i := 0;
 while i < 10 do
   write("begin ifs");
+  k := if (i < 4) then
+    101
+  else
+    111
+  fi;
+  write(k);
+  write("end if val");
   if (i < 4) then
     write("if")
   fi;
