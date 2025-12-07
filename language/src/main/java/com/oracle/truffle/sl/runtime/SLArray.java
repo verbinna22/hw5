@@ -11,19 +11,19 @@ public final class SLArray {
         this.elements = elements;
     }
 
-    public Object read(int index) {
-        return index >= 0 && index < elements.length ? elements[index] : SLNull.SINGLETON;
+    public Object read(long index) {
+        return index >= 0 && index < elements.length ? elements[(int)index] : SLNull.SINGLETON;
     }
 
-    public void write(int index, Object value) {
+    public void write(long index, Object value) {
         if (index >= 0 && index < elements.length) {
-            elements[index] = value;
+            elements[(int)index] = value;
         } else {
             throw new RuntimeException("Invalid index");
         }
     }
 
-    public int length() {
+    public long length() {
         return elements.length;
     }
 

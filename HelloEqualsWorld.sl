@@ -43,6 +43,8 @@ write(one() + 2);
 
 ();
 arr := [1, 2, 3, 4, 5];
+write(arr[4]);
+arr[0] := 10000;
 if 1 then write("YES") else write("NO") fi;
 
 if 1 then else fi;

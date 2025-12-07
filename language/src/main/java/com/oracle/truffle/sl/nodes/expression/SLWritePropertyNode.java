@@ -58,6 +58,7 @@ import com.oracle.truffle.sl.SLException;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.util.SLToMemberNode;
 import com.oracle.truffle.sl.nodes.util.SLToTruffleStringNode;
+import com.oracle.truffle.sl.runtime.SLArray;
 import com.oracle.truffle.sl.runtime.SLObject;
 
 /**
@@ -99,6 +100,18 @@ public abstract class SLWritePropertyNode extends SLExpressionNode {
                     @CachedLibrary("receiver") DynamicObjectLibrary objectLibrary,
                     @Cached SLToTruffleStringNode toTruffleStringNode) {
         objectLibrary.put(receiver, toTruffleStringNode.execute(node, name), value);
+        return value;
+    }
+
+    @Specialization(limit = "LIBRARY_LIMIT")
+    public static Object writeSLArray(SLArray receiver, Object index, Object value,
+                                      @Bind Node node,
+                                      @CachedLibrary("index") InteropLibrary numbers) {
+        try {
+            receiver.write(numbers.asLong(index), value);
+        } catch (UnsupportedMessageException e) {
+            throw new RuntimeException(e);
+        }
         return value;
     }
 
