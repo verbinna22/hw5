@@ -34,6 +34,16 @@ while i < 10 do
   else
     write("else")
   fi;
+  write("end if2");
+  if (i < 4) then
+    write("if3")
+  elif (i < 5) then
+    write("elif31")
+  elif (i < 6) then
+    write("elif32")
+  else
+    write("else3")
+  fi;
   write("end ifs");
   doIt(i);
   i := i + 1
