@@ -101,10 +101,6 @@ import com.oracle.truffle.sl.nodes.SLEvalRootNode;
 import com.oracle.truffle.sl.nodes.SLRootNode;
 import com.oracle.truffle.sl.nodes.SLTypes;
 import com.oracle.truffle.sl.nodes.SLUndefinedFunctionRootNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBreakNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
 import com.oracle.truffle.sl.nodes.expression.SLAddNode;
 import com.oracle.truffle.sl.nodes.expression.SLBigIntegerLiteralNode;
 import com.oracle.truffle.sl.nodes.expression.SLDivNode;
@@ -122,7 +118,6 @@ import com.oracle.truffle.sl.nodes.expression.SLSubNode;
 import com.oracle.truffle.sl.nodes.expression.SLWritePropertyNode;
 import com.oracle.truffle.sl.nodes.local.SLReadLocalVariableNode;
 import com.oracle.truffle.sl.nodes.local.SLWriteLocalVariableNode;
-//import com.oracle.truffle.sl.parser.SLBytecodeParser;
 import com.oracle.truffle.sl.parser.SLNodeParser;
 import com.oracle.truffle.sl.runtime.SLBigInteger;
 import com.oracle.truffle.sl.runtime.SLContext;
@@ -175,9 +170,7 @@ import com.oracle.truffle.sl.runtime.SLStrings;
  * write}) before they can be used (by a {@link SLReadLocalVariableNode read}). Local variables are
  * not visible outside of the block where they were first defined.
  * <li>Basic control flow statements: {@link},
- * {@link while} with {@link SLBreakNode break} and {@link SLContinueNode continue},
- * {@link SLReturnNode return}.
- * <li>Debugging control: {@link SLDebuggerNode debugger} statement uses
+ *
  * {@link DebuggerTags.AlwaysHalt} tag to halt the execution when run under the debugger.
  * <li>Function calls: {@link SLInvokeNode invocations} are efficiently implemented with
  * {@link SLFunction polymorphic inline caches}.

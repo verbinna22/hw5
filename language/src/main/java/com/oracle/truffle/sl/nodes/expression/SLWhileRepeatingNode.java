@@ -49,9 +49,6 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBreakException;
-import com.oracle.truffle.sl.nodes.controlflow.SLContinueException;
-import com.oracle.truffle.sl.nodes.util.SLToBooleanNodeGen;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 
 /**
@@ -91,25 +88,11 @@ public final class SLWhileRepeatingNode extends Node implements RepeatingNode {
             /* Normal exit of the loop when loop condition is false. */
             return false;
         }
+        /* Execute the loop body. */
+        bodyNode.executeVoid(frame);
+        /* Continue with next loop iteration. */
+        return true;
 
-        try {
-            /* Execute the loop body. */
-            bodyNode.executeVoid(frame);
-            /* Continue with next loop iteration. */
-            return true;
-
-        } catch (SLContinueException ex) {
-            /* In the interpreter, record profiling information that the loop uses continue. */
-            continueTaken.enter();
-            /* Continue with next loop iteration. */
-            return true;
-
-        } catch (SLBreakException ex) {
-            /* In the interpreter, record profiling information that the loop uses break. */
-            breakTaken.enter();
-            /* Break out of the loop. */
-            return false;
-        }
     }
 
     private boolean evaluateCondition(VirtualFrame frame) {

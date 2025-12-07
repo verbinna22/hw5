@@ -51,8 +51,8 @@ import com.oracle.truffle.sl.runtime.SLNull;
 
 /**
  * The body of a user-defined SL function. This is the node referenced by a {@link SLRootNode} for
- * user-defined functions. It handles the return value of a function: the {@link SLReturnNode return
- * statement} throws an {@link SLReturnException exception} with the return value. This node catches
+ * user-defined functions. It handles the return value of a function: the {@link return
+ * statement} throws an {@link exception} with the return value. This node catches
  * the exception. If the method ends without an explicit {@code return}, return the
  * {@link SLNull#SINGLETON default null value}.
  */
@@ -64,7 +64,7 @@ public final class SLFunctionBodyNode extends SLExpressionNode {
 
     /**
      * Profiling information, collected by the interpreter, capturing whether the function had an
-     * {@link SLReturnNode explicit return statement}. This allows the compiler to generate better
+     * {@linkexplicit return statement}. This allows the compiler to generate better
      * code.
      */
     private final BranchProfile exceptionTaken = BranchProfile.create();
@@ -78,20 +78,7 @@ public final class SLFunctionBodyNode extends SLExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         Object result = null;
-        try {
-            /* Execute the function body. */
-            result = bodyNode.executeGeneric(frame);
-
-        } catch (SLReturnException ex) {
-            /*
-             * In the interpreter, record profiling information that the function has an explicit
-             * return.
-             */
-            exceptionTaken.enter();
-            /* The exception transports the actual return value. */
-            return ex.getResult();
-        }
-
+        result = bodyNode.executeGeneric(frame);
         /*
          * In the interpreter, record profiling information that the function ends without an
          * explicit return.
