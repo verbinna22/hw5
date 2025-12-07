@@ -77,12 +77,6 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIf_expression(SimpleLanguageParser.If_expressionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#return_statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitReturn_statement(SimpleLanguageParser.Return_statementContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -125,12 +119,31 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSkip_expression(SimpleLanguageParser.Skip_expressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#expr_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpr_list(SimpleLanguageParser.Expr_listContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#array_expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray_expression(SimpleLanguageParser.Array_expressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code IfExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ArrayExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayExpr(SimpleLanguageParser.ArrayExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code SkipExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.

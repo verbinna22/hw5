@@ -41,11 +41,9 @@
 package com.oracle.truffle.sl.parser;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.sl.nodes.expression.*;
 import com.oracle.truffle.sl.nodes.local.*;
 import com.oracle.truffle.sl.runtime.SLContext;
@@ -447,6 +445,22 @@ public class SLNodeParser extends SLBaseParser {
                 blockNode.setSourceSection(startPos, 0);
             }
             return blockNode;
+        }
+
+        @Override
+        public SLExpressionNode visitArray_expression(SimpleLanguageParser.Array_expressionContext ctx) {
+            SLExpressionNode[] children;
+            var expr_list = ctx.expr_list();
+            if (expr_list == null) {
+                children = new SLExpressionNode[0];
+            } else {
+                children = expr_list.expression().stream().map(e -> expressionVisitor.visitExpression(e)).toArray(SLExpressionNode[]::new);
+            }
+            var result = new SLArrayLiteralNode(children);
+            final int start = ctx.getStart().getStartIndex();
+            final int end = ctx.getStop().getStopIndex() + 1;
+            result.setSourceSection(start, end - start);
+            return result;
         }
 
         @Override

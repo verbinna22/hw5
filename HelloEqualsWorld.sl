@@ -27,6 +27,7 @@ var i;
 var k = 0;
 var j = k * 15 * 15;
 var ijk = 11;
+var arr;
 
 i := 0;
 write("ijk test");
@@ -41,6 +42,7 @@ write("ijk test end");
 write(one() + 2);
 
 ();
+arr := [1, 2, 3, 4, 5];
 if 1 then write("YES") else write("NO") fi;
 
 if 1 then else fi;

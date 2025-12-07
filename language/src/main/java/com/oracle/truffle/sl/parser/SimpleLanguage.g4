@@ -113,11 +113,6 @@ if_expression
 	;
 
 
-return_statement
-	: r='return' expression? '@'
-	;
-
-
 expression
 	: or_term (OP_SEQ or_term)*
 	;
@@ -149,8 +144,16 @@ skip_expression
     : 'skip'
     ;
 
+expr_list
+    : expression (',' expression)*
+    ;
+array_expression
+    : '[' (expr_list)? ']'
+    ;
+
 factor
 	: if_expression                 # IfExpr
+	| array_expression              # ArrayExpr
 	| skip_expression               # SkipExpr
     | while_expression              # WhileExpr
     | for_expression                # ForExpr
