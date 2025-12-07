@@ -60,41 +60,6 @@ public class SimpleLanguageBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatement(SimpleLanguageParser.StatementContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitBreak_statement(SimpleLanguageParser.Break_statementContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitContinue_statement(SimpleLanguageParser.Continue_statementContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitExpression_statement(SimpleLanguageParser.Expression_statementContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitDebugger_statement(SimpleLanguageParser.Debugger_statementContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitWhile_expression(SimpleLanguageParser.While_expressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -257,13 +222,6 @@ public class SimpleLanguageBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitMemberAssign(SimpleLanguageParser.MemberAssignContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitMemberField(SimpleLanguageParser.MemberFieldContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

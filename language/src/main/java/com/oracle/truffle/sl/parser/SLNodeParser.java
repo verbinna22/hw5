@@ -66,32 +66,21 @@ import com.oracle.truffle.sl.nodes.SLAstRootNode;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLRootNode;
 import com.oracle.truffle.sl.nodes.SLStatementNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLBreakNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLContinueNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLDebuggerNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
-import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
+import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ArithmeticContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.BlockContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.Break_statementContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.Continue_statementContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.Debugger_statementContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ExpressionContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.Expression_statementContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.FunctionContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Logic_factorContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Logic_termContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberAssignContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberCallContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberFieldContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberIndexContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Member_expressionContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.NameAccessContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.NumericLiteralContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ParenExpressionContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.Return_statementContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.StatementContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.StringLiteralContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.TermContext;
 
@@ -108,7 +97,6 @@ public class SLNodeParser extends SLBaseParser {
 
     private FrameDescriptor.Builder frameDescriptorBuilder;
 
-    private SLStatementVisitor statementVisitor = new SLStatementVisitor();
     private SLExpressionVisitor expressionVisitor = new SLExpressionVisitor();
     private int loopDepth = 0;
     private final Map<TruffleString, RootCallTarget> functions = new HashMap<>();
@@ -211,68 +199,6 @@ public class SLNodeParser extends SLBaseParser {
         SLStringLiteralNode node = new SLStringLiteralNode(asTruffleString(name, removeQuotes));
         node.setSourceSection(name.getStartIndex(), name.getStopIndex() - name.getStartIndex() + 1);
         return node;
-    }
-
-    private class SLStatementVisitor extends SimpleLanguageBaseVisitor<SLStatementNode> {
-        @Override
-        public SLStatementNode visitDebugger_statement(Debugger_statementContext ctx) {
-            final SLDebuggerNode debuggerNode = new SLDebuggerNode();
-            srcFromToken(debuggerNode, ctx.d);
-            return debuggerNode;
-        }
-
-        @Override
-        public SLStatementNode visitBreak_statement(Break_statementContext ctx) {
-            if (loopDepth == 0) {
-                semErr(ctx.b, "break used outside of loop");
-            }
-            final SLBreakNode breakNode = new SLBreakNode();
-            srcFromToken(breakNode, ctx.b);
-            return breakNode;
-        }
-
-        @Override
-        public SLStatementNode visitContinue_statement(Continue_statementContext ctx) {
-            if (loopDepth == 0) {
-                semErr(ctx.c, "continue used outside of loop");
-            }
-            final SLContinueNode continueNode = new SLContinueNode();
-            srcFromToken(continueNode, ctx.c);
-            return continueNode;
-        }
-
-
-        @Override
-        public SLStatementNode visitReturn_statement(Return_statementContext ctx) {
-
-            final SLExpressionNode valueNode;
-            if (ctx.expression() != null) {
-                valueNode = expressionVisitor.visitExpression(ctx.expression());
-            } else {
-                valueNode = null;
-            }
-
-            final int start = ctx.r.getStartIndex();
-            final int length = valueNode == null ? ctx.r.getText().length() : valueNode.getSourceEndIndex() - start;
-            final SLReturnNode returnNode = new SLReturnNode(valueNode);
-            returnNode.setSourceSection(start, length);
-            return returnNode;
-        }
-
-        @Override
-        public SLStatementNode visitStatement(StatementContext ctx) {
-            return visit(ctx.getChild(0));
-        }
-
-        @Override
-        public SLStatementNode visitExpression_statement(Expression_statementContext ctx) {
-            return expressionVisitor.visitExpression(ctx.expression());
-        }
-
-        @Override
-        public SLStatementNode visitChildren(RuleNode arg0) {
-            throw new UnsupportedOperationException("node: " + arg0.getClass().getSimpleName());
-        }
     }
 
     private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
@@ -772,28 +698,6 @@ public class SLNodeParser extends SLBaseParser {
             assignmentReceiver = receiver;
             receiver = result;
             assignmentName = null;
-
-            return result;
-        }
-
-        @Override
-        public SLExpressionNode visitMemberField(MemberFieldContext ctx) {
-            if (receiver == null) {
-                receiver = createRead(assignmentName);
-            }
-
-            SLExpressionNode nameNode = createString(ctx.IDENTIFIER().getSymbol(), false);
-            assignmentName = nameNode;
-
-            final SLExpressionNode result = SLReadPropertyNodeGen.create(receiver, nameNode);
-
-            final int startPos = receiver.getSourceCharIndex();
-            final int endPos = nameNode.getSourceEndIndex();
-            result.setSourceSection(startPos, endPos - startPos);
-            result.addExpressionTag();
-
-            assignmentReceiver = receiver;
-            receiver = result;
 
             return result;
         }

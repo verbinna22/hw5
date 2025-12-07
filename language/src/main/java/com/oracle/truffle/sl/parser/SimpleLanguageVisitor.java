@@ -47,36 +47,6 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBlock(SimpleLanguageParser.BlockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStatement(SimpleLanguageParser.StatementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#break_statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBreak_statement(SimpleLanguageParser.Break_statementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#continue_statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitContinue_statement(SimpleLanguageParser.Continue_statementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#expression_statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExpression_statement(SimpleLanguageParser.Expression_statementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SimpleLanguageParser#debugger_statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDebugger_statement(SimpleLanguageParser.Debugger_statementContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#while_expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -231,13 +201,6 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitMemberAssign(SimpleLanguageParser.MemberAssignContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code MemberField}
-	 * labeled alternative in {@link SimpleLanguageParser#member_expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitMemberField(SimpleLanguageParser.MemberFieldContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code MemberIndex}
 	 * labeled alternative in {@link SimpleLanguageParser#member_expression}.

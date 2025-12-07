@@ -88,31 +88,6 @@ block
 	: def* expression?
 	;
 
-
-statement
-	: break_statement
-	| continue_statement
-	| return_statement
-	| expression_statement
-	| debugger_statement
-	;
-
-break_statement
-	: b='break'	'@'
-	;
-
-continue_statement
-	: c='continue' '@'
-	;
-
-expression_statement
-	: expression '@'
-	;
-
-debugger_statement
-	: d='debugger' '@'
-	;
-
 while_expression
     : w='while' condition=expression
     		'do' body=block 'od'
@@ -190,7 +165,6 @@ factor
 member_expression
 	: '(' ( expression (',' expression)* )? ')' 	# MemberCall
 	| ':=' or_term							  	    # MemberAssign
-	| '.' IDENTIFIER						      	# MemberField
 	| '[' expression ']'							# MemberIndex
 	;
 

@@ -40,6 +40,7 @@ write("ijk test end");
 
 write(one() + 2);
 
+();
 if 1 then write("YES") else write("NO") fi;
 
 if 1 then else fi;
