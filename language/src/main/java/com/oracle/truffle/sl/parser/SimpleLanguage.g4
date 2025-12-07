@@ -147,13 +147,19 @@ skip_expression
 expr_list
     : expression (',' expression)*
     ;
+
 array_expression
     : '[' (expr_list)? ']'
+    ;
+
+sexp_expression
+    : UIDENTIFIER ('(' expr_list ')')?
     ;
 
 factor
 	: if_expression                 # IfExpr
 	| array_expression              # ArrayExpr
+	| sexp_expression               # SexpExpr
 	| skip_expression               # SkipExpr
     | while_expression              # WhileExpr
     | for_expression                # ForExpr
@@ -185,6 +191,8 @@ OP_ADD: '+' | '-';
 OP_MUL: '*' | '/' | '%';
 
 fragment LETTER : [A-Z] | [a-z] | '_' | '$';
+fragment LLETTER : [a-z];
+fragment ULETTER : [A-Z];
 fragment NON_ZERO_DIGIT : [1-9];
 fragment DIGIT : [0-9];
 fragment HEX_DIGIT : [0-9] | [a-f] | [A-F];
@@ -193,7 +201,8 @@ fragment BINARY_DIGIT : '0' | '1';
 fragment TAB : '\t';
 fragment STRING_CHAR : ~('"' | '\r' | '\n');
 
-IDENTIFIER : LETTER (LETTER | DIGIT)*;
+IDENTIFIER : LLETTER (LETTER | DIGIT)*;
+UIDENTIFIER : ULETTER (LETTER | DIGIT)*;
 STRING_LITERAL : '"' STRING_CHAR* '"';
 NUMERIC_LITERAL : '0' | NON_ZERO_DIGIT DIGIT*;
 

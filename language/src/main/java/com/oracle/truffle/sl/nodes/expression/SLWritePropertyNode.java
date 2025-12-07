@@ -60,6 +60,7 @@ import com.oracle.truffle.sl.nodes.util.SLToMemberNode;
 import com.oracle.truffle.sl.nodes.util.SLToTruffleStringNode;
 import com.oracle.truffle.sl.runtime.SLArray;
 import com.oracle.truffle.sl.runtime.SLObject;
+import com.oracle.truffle.sl.runtime.SLSexp;
 
 /**
  * The node for writing a property of an object. When executed, this node:
@@ -115,7 +116,19 @@ public abstract class SLWritePropertyNode extends SLExpressionNode {
         return value;
     }
 
-    @Specialization(guards = "!isSLObject(receiver)", limit = "LIBRARY_LIMIT")
+    @Specialization(limit = "LIBRARY_LIMIT")
+    public static Object writeSLSexp(SLSexp receiver, Object index, Object value,
+                                      @Bind Node node,
+                                      @CachedLibrary("index") InteropLibrary numbers) {
+        try {
+            receiver.write(numbers.asLong(index), value);
+        } catch (UnsupportedMessageException e) {
+            throw new RuntimeException(e);
+        }
+        return value;
+    }
+
+    @Specialization(guards = {"!isSLObject(receiver)", "!isSLArray(receiver)", "!isSLSexp(receiver)"}, limit = "LIBRARY_LIMIT")
     public static Object writeObject(Object receiver, Object name, Object value,
                     @Bind Node node,
                     @CachedLibrary("receiver") InteropLibrary objectLibrary,
@@ -131,5 +144,11 @@ public abstract class SLWritePropertyNode extends SLExpressionNode {
 
     public static boolean isSLObject(Object receiver) {
         return receiver instanceof SLObject;
+    }
+    public static boolean isSLArray(Object receiver) {
+        return receiver instanceof SLArray;
+    }
+    public static boolean isSLSexp(Object receiver) {
+        return receiver instanceof SLSexp;
     }
 }

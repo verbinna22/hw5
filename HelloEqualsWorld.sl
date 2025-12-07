@@ -41,6 +41,10 @@ write("ijk test end");
 
 write(one() + 2);
 
+arr := Cons(1, 2, 3);
+write(arr[0]);
+arr[0] := 10000;
+write(arr[0]);
 ();
 arr := [1, 2, 3, 4, 5];
 write(arr[4]);

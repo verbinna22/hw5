@@ -60,6 +60,7 @@ import com.oracle.truffle.sl.nodes.util.SLToMemberNode;
 import com.oracle.truffle.sl.nodes.util.SLToTruffleStringNode;
 import com.oracle.truffle.sl.runtime.SLArray;
 import com.oracle.truffle.sl.runtime.SLObject;
+import com.oracle.truffle.sl.runtime.SLSexp;
 
 /**
  * The node for reading a property of an object. When executed, this node:
@@ -104,7 +105,7 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
         return result;
     }
 
-    @Specialization(guards = {"!isSLObject(receiver)", "!isSLArray(receiver)", "objects.hasMembers(receiver)"}, limit = "LIBRARY_LIMIT")
+    @Specialization(guards = {"!isSLObject(receiver)", "!isSLArray(receiver)", "!isSLSexp(receiver)", "objects.hasMembers(receiver)"}, limit = "LIBRARY_LIMIT")
     public static Object readObject(Object receiver, Object name,
                     @Bind Node node,
                     @CachedLibrary("receiver") InteropLibrary objects,
@@ -118,9 +119,23 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
     }
 
     @Specialization(limit = "LIBRARY_LIMIT")
-    public static Object readSLObject(SLArray receiver, Object index,
+    public static Object readSLArray(SLArray receiver, Object index,
                                       @Bind Node node,
                                       @CachedLibrary("index") InteropLibrary numbers) {
+
+        Object result = null;
+        try {
+            result = receiver.read(numbers.asLong(index));
+        } catch (UnsupportedMessageException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
+    @Specialization(limit = "LIBRARY_LIMIT")
+    public static Object readSLSexp(SLSexp receiver, Object index,
+                                     @Bind Node node,
+                                     @CachedLibrary("index") InteropLibrary numbers) {
 
         Object result = null;
         try {
@@ -137,5 +152,7 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
     public static boolean isSLArray(Object receiver) {
         return receiver instanceof SLArray;
     }
-
+    public static boolean isSLSexp(Object receiver) {
+        return receiver instanceof SLSexp;
+    }
 }

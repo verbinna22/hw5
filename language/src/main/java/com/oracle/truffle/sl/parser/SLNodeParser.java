@@ -464,6 +464,22 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitSexp_expression(SimpleLanguageParser.Sexp_expressionContext ctx) {
+            SLExpressionNode[] children;
+            var expr_list = ctx.expr_list();
+            if (expr_list == null) {
+                children = new SLExpressionNode[0];
+            } else {
+                children = expr_list.expression().stream().map(e -> expressionVisitor.visitExpression(e)).toArray(SLExpressionNode[]::new);
+            }
+            var result = new SLSexpNode(ctx.UIDENTIFIER().getText(), children);
+            final int start = ctx.getStart().getStartIndex();
+            final int end = ctx.getStop().getStopIndex() + 1;
+            result.setSourceSection(start, end - start);
+            return result;
+        }
+
+        @Override
         public SLExpressionNode visitIf_expression(SimpleLanguageParser.If_expressionContext ctx) {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
             SLExpressionNode thenPartNode = expressionVisitor.visitBlock(ctx.then);

@@ -131,6 +131,12 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArray_expression(SimpleLanguageParser.Array_expressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#sexp_expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSexp_expression(SimpleLanguageParser.Sexp_expressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code IfExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
@@ -144,6 +150,13 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArrayExpr(SimpleLanguageParser.ArrayExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code SexpExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSexpExpr(SimpleLanguageParser.SexpExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code SkipExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
