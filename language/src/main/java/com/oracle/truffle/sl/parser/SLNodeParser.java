@@ -367,10 +367,22 @@ public class SLNodeParser extends SLBaseParser {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
             SLStatementNode thenPartNode = expressionVisitor.visitBlock(ctx.then);
             SLStatementNode elsePartNode = ctx.alt == null ? null : expressionVisitor.visitBlock(ctx.alt);
-
             conditionNode.addStatementTag();
+            final int end = ctx.f.getStopIndex();
+            var elifSequence = ctx.elifSequence();
+            if (elifSequence != null) {
+                for (int i = elifSequence.size() - 1; i >= 0; --i) {
+                    var elifBlock = elifSequence.get(i);
+                    var cond = expressionVisitor.visitExpression(elifBlock.cond);
+                    var elif = expressionVisitor.visitBlock(elifBlock.elif);
+                    cond.addStatementTag();
+                    var ifExpr = new SLIfExpression(cond, elif, elsePartNode);
+                    int st = elifBlock.el.getStartIndex();
+                    ifExpr.setSourceSection(st, end - st);
+                    elsePartNode = ifExpr;
+                }
+            }
             final int start = ctx.i.getStartIndex();
-            final int end = elsePartNode == null ? thenPartNode.getSourceEndIndex() : elsePartNode.getSourceEndIndex();
             final SLIfExpression ifNode = new SLIfExpression(conditionNode, thenPartNode, elsePartNode);
             ifNode.setSourceSection(start, end - start);
             return ifNode;

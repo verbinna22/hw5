@@ -83,6 +83,12 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhile_expression(SimpleLanguageParser.While_expressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#elifSequence}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitElifSequence(SimpleLanguageParser.ElifSequenceContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#if_expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

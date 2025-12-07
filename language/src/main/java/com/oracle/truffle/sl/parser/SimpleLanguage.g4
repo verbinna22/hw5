@@ -118,10 +118,13 @@ while_expression
     		'do' body=block 'od'
     	;
 
+elifSequence : el='elif' cond=expression 'then' elif=block ;
+
 if_expression
 	: i='if' condition=expression 'then'
 		  then=block
-		( 'else' alt=block )? 'fi'
+		elifSequence*
+		( 'else' alt=block )? f='fi'
 	;
 
 
