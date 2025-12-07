@@ -119,9 +119,9 @@ while_expression
     	;
 
 if_expression
-	: i='if' '(' condition=expression ')'
-		'{' then=block '}'
-		( 'else' '{' alt=block '}')?
+	: i='if' condition=expression 'then'
+		  then=block
+		( 'else' alt=block )? 'fi'
 	;
 
 
