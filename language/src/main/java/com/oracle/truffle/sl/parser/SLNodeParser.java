@@ -442,6 +442,81 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitFor_expression(SimpleLanguageParser.For_expressionContext ctx) {
+            List<TruffleString> newLocals = enterBlock(ctx.init);
+
+            for (TruffleString newLocal : newLocals) {
+                frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, newLocal, null);
+            }
+
+
+            int startPos;
+            int endPos;
+
+            var startToken = ctx.getStart();
+            var endToken = ctx.getStop();
+            if (startToken == null || endToken == null) {
+                startPos = endPos = 0;
+            } else {
+                startPos = startToken.getStartIndex();
+                endPos = endToken.getStopIndex();
+            }
+
+            List<SLExpressionNode> bodyNodes = new ArrayList<>();
+            // ---
+            SLExpressionNode initNode = expressionVisitor.visitExpression(ctx.init.expression());
+            SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
+            loopDepth++;
+            SLExpressionNode bodyExprNode = expressionVisitor.visitBlock(ctx.body);
+            SLExpressionNode lastExprNode = expressionVisitor.visitExpression(ctx.last);
+            SLExpressionNode body = new SLSeqNode(bodyExprNode, lastExprNode);
+            loopDepth--;
+
+            conditionNode.addStatementTag();
+            final int start = ctx.f.getStartIndex();
+            final int end = ctx.od.getStopIndex();
+            final SLDoWhileExpression whileNode = new SLDoWhileExpression(conditionNode, body);
+            whileNode.setSourceSection(start, end - start);
+            SLExpressionNode cycleNode = new SLSeqNode(initNode, whileNode);
+            // ---
+
+            bodyNodes.add(cycleNode);
+
+            for (var definition : ctx.body.def().reversed()) {
+                var variableDefinition = definition.varSingleLineDef();
+                if (variableDefinition != null) {
+                    for (var variable : variableDefinition.varSingleDef().reversed()) {
+                        if (variable.or_term() != null) {
+                            var varToken = variable.IDENTIFIER().getSymbol();
+                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var result = createAssignment(createString(varToken, false), valueNode, null);
+                            bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                        }
+                    }
+                }
+            }
+
+            exitBlock();
+
+            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+            flattenBlocks(bodyNodes, flattenedNodes);
+            int n = flattenedNodes.size();
+            for (int i = 0; i < n; i++) {
+                SLStatementNode statement = flattenedNodes.get(i);
+                if (statement.hasSource() && !isHaltInCondition(statement)) {
+                    statement.addStatementTag();
+                }
+            }
+            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+            if (startPos != 0 || endPos != 0) {
+                blockNode.setSourceSection(startPos, endPos - startPos);
+            } else {
+                blockNode.setUnavailableSourceSection();
+            }
+            return blockNode;
+        }
+
+        @Override
         public SLExpressionNode visitIf_expression(SimpleLanguageParser.If_expressionContext ctx) {
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
             SLExpressionNode thenPartNode = expressionVisitor.visitBlock(ctx.then);

@@ -25,6 +25,10 @@ var j = k * 15 * 15;
 
 i := 0;
 
+for var i = 0; var j; j := 1, i < 5, i := i + 1 do
+  write(i);
+  write(j)
+od;
 do
   var s = 5;
   s := s - 1;

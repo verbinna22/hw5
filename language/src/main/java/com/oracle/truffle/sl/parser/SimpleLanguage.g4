@@ -118,6 +118,11 @@ while_expression
     		'do' body=block 'od'
     	;
 
+for_expression
+    : f='for' init=block ',' condition=expression ',' last=expression
+    		'do' body=block od='od'
+    	;
+
 do_while_expression
     : d='do' body=block
         'while' condition=expression 'od'
@@ -173,6 +178,7 @@ factor
 	: if_expression                 # IfExpr
 	| skip_expression               # SkipExpr
     | while_expression              # WhileExpr
+    | for_expression                # ForExpr
     | do_while_expression           # DoWhileExpr
 	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral
