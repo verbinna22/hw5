@@ -475,14 +475,14 @@ public class SLNodeParser extends SLBaseParser {
             conditionNode.addStatementTag();
             final int start = ctx.f.getStartIndex();
             final int end = ctx.od.getStopIndex();
-            final SLDoWhileExpression whileNode = new SLDoWhileExpression(conditionNode, body);
+            final SLWhileExpression whileNode = new SLWhileExpression(conditionNode, body);
             whileNode.setSourceSection(start, end - start);
             SLExpressionNode cycleNode = new SLSeqNode(initNode, whileNode);
             // ---
 
             bodyNodes.add(cycleNode);
 
-            for (var definition : ctx.body.def().reversed()) {
+            for (var definition : ctx.init.def().reversed()) {
                 var variableDefinition = definition.varSingleLineDef();
                 if (variableDefinition != null) {
                     for (var variable : variableDefinition.varSingleDef().reversed()) {

@@ -42,10 +42,14 @@ write(one() + 2);
 
 if 1 then write("YES") else write("NO") fi;
 
-for var i = 0; var j; j := 1, i < 5, i := i + 1 do
+write("FOR");
+for var i = 0; var j; j := 1; write(i), i < 5, i := i + 1 do
+  --var i = 0, j = 0;
+  write(stacktrace());
   write(i);
   write(j)
 od;
+write("ENDFOR");
 do
   var s = 5;
   s := s - 1;

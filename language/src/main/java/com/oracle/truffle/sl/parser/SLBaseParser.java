@@ -169,8 +169,8 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
         LocalScope(LocalScope parent) {
             this.parent = parent;
-            locals = new HashMap<>(parent.locals);
-            initialized = new HashSet<>(parent.initialized);
+            locals = new HashMap<>();
+            initialized = new HashSet<>();
         }
 
         LocalScope() {
@@ -197,7 +197,12 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
          * two disjoint scopes).
          */
         Integer getLocalIndex(TruffleString name) {
-            Integer i = locals.get(name);
+            var currentLocals = this;
+            Integer i = currentLocals.locals.get(name);
+            while (i == null && currentLocals.parent != null) {
+                currentLocals = currentLocals.parent;
+                i = currentLocals.locals.get(name);
+            }
             if (i == null) {
                 return -1;
             } else {
@@ -249,9 +254,6 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         List<TruffleString> result = new ArrayList<>();
         curScope = new LocalScope(curScope);
 
-//        FindLocalsVisitor findLocals = new FindLocalsVisitor();
-//        findLocals.visitBlock(ctx);
-
         List<Token> variables = new ArrayList<>();
         for (var definition : ctx.def()) {
             var variableContext = definition.varSingleLineDef();
@@ -266,6 +268,8 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
             if (!curScope.localDeclared(name)) {
                 curScope.declareLocal(name);
                 result.add(name);
+            } else {
+                semErr(tok, tok.getText() + " variable redefinition");
             }
         }
 
