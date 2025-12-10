@@ -31,6 +31,13 @@ func changeGlobal() {
     write(i)
 }
 
+func testLam() {
+   func two() {
+      2
+   }
+   write(two())
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -38,6 +45,7 @@ var ijk = 11;
 var arr;
 var arr2 = [1, 2, 3];
 
+-- i := one;
 i := 0;
 write("ijk test");
 write(ijk);
@@ -126,5 +134,6 @@ esac;
 changeGlobal();
 changeGlobal();
 changeGlobal();
+testLam();
 0
 

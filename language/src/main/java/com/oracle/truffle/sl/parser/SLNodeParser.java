@@ -191,6 +191,12 @@ public class SLNodeParser extends SLBaseParser {
 
         frameDescriptorBuilder = null;
 
+        for (var definition : ctx.body.def()) {
+            var f = definition.function();
+            if (f != null) {
+                SLNodeParser.this.visitFunction(f);
+            }
+        }
         return null;
     }
 
