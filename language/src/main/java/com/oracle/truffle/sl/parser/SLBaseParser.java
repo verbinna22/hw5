@@ -160,7 +160,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
     /**
      * Maintains lexical scoping information.
      */
-    private class LocalScope {
+    protected class LocalScope {
         final LocalScope parent;
         // Maps local names to a unique index.
         private final Map<TruffleString, Integer> locals;
@@ -224,7 +224,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
     }
 
     private int totalLocals = 0;
-    private LocalScope curScope = null;
+    protected LocalScope curScope = null;
 
     protected final List<TruffleString> enterFunction(FunctionContext ctx) {
         List<TruffleString> result = new ArrayList<>();

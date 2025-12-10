@@ -43,7 +43,6 @@ package com.oracle.truffle.sl.parser;
 import java.math.BigInteger;
 import java.util.*;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.sl.nodes.*;
 import com.oracle.truffle.sl.nodes.expression.*;
 import com.oracle.truffle.sl.nodes.local.*;
@@ -53,7 +52,6 @@ import com.oracle.truffle.sl.runtime.SLSexp;
 import com.oracle.truffle.sl.runtime.SLStrings;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.oracle.truffle.api.RootCallTarget;
@@ -100,7 +98,19 @@ public class SLNodeParser extends SLBaseParser {
     private int maxGlobalId = 0;
     private final Map<TruffleString, Integer> globalToId = new HashMap<>();
     private boolean mainBlockVisited = false;
-    private final Map<TruffleString, List<TruffleString>> funcToNonLocals = new HashMap<>();
+
+    private class NonLocal {
+        String fNameWhereFound;
+        int vId;
+
+        public NonLocal(String fNameWhereFound, Integer vId) {
+            this.fNameWhereFound = fNameWhereFound;
+            this.vId = vId;
+        }
+    }
+    private final Map<String, ArrayList<NonLocal>> funcToNonLocals = new HashMap<>();
+    private final Map<String, Map<String, Map<Integer, Integer>>> funcToFoundFuncToVarIdToInd = new HashMap<>();
+    private final Map<String, Map<String, Integer>> funcToVarNameToInd = new HashMap<>();
 
     protected SLNodeParser(SLLanguage language, Source source) {
         super(language, source);
@@ -110,6 +120,7 @@ public class SLNodeParser extends SLBaseParser {
     public Void visitBlock(SimpleLanguageParser.BlockContext ctx) { // add main
         if (mainBlockVisited) return visitChildren(ctx);
         mainBlockVisited = true;
+        new NonLocalVisitor().visitMainBlock(ctx);
         TruffleString functionName = SLStrings.MAIN;
 
         var exprStart = ctx.expression().getStart();
@@ -758,8 +769,44 @@ public class SLNodeParser extends SLBaseParser {
             return result;
         }
 
-        private class NonLocalVisitor extends SimpleLanguageBaseVisitor<SLPatternNode> {
+        private boolean definedNonLocal(String func, String varName) {
+            if (funcToVarNameToInd.containsKey(func)) {
+                return funcToVarNameToInd.get(func).containsKey(varName);
+            }
+            return false;
+        }
 
+        private boolean containsTheSame(String func, String foundFunc, Integer varId) {
+            return funcToFoundFuncToVarIdToInd.get(func).containsKey(foundFunc)
+                    && funcToFoundFuncToVarIdToInd.get(func).get(foundFunc).containsKey(varId);
+        }
+
+        private boolean wasFuncProcessed(String func) {
+            return funcToVarNameToInd.containsKey(func);
+        }
+
+        private void addNonLocal(String func, Integer varId, String funcWhereFound, String varName) {
+            if (!funcToNonLocals.containsKey(func)) {
+                funcToNonLocals.put(func, new ArrayList<>());
+                funcToFoundFuncToVarIdToInd.put(func, new HashMap<>());
+                funcToFoundFuncToVarIdToInd.get(func).put(func, new HashMap<>());
+                funcToVarNameToInd.put(func, new HashMap<>());
+            }
+            int ind = funcToNonLocals.get(func).size();
+            funcToNonLocals.get(func).add(new NonLocal(func, varId));
+            funcToFoundFuncToVarIdToInd.get(func).get(funcWhereFound).put(varId, ind);
+            funcToVarNameToInd.get(func).put(varName, ind);
+        }
+
+        private void addNonLocal(String func, Integer varId, String funcWhereFound) {
+            if (!funcToNonLocals.containsKey(func)) {
+                funcToNonLocals.put(func, new ArrayList<>());
+                funcToFoundFuncToVarIdToInd.put(func, new HashMap<>());
+                funcToFoundFuncToVarIdToInd.get(func).put(func, new HashMap<>());
+            }
+            int ind = funcToNonLocals.get(func).size();
+            funcToNonLocals.get(func).add(new NonLocal(func, varId));
+            funcToFoundFuncToVarIdToInd.get(func).get(funcWhereFound).put(varId, ind);
         }
 
         private class PatternVisitor extends SimpleLanguageBaseVisitor<SLPatternNode> {
@@ -1057,6 +1104,124 @@ public class SLNodeParser extends SLBaseParser {
             return result;
         }
 
+    }
+
+    private class NonLocalVisitor extends SimpleLanguageBaseVisitor<Void> {
+        private List<LocalScope> functionScopes = new ArrayList<>();
+        private List<String> functionNames = new ArrayList<>();
+        private String currentFunction = "main";
+        private String calledFName = null;
+        private Map<String, ArrayList<String>> funcToWait2funcToAdd = new HashMap<>();
+        private Map<String, Integer> functionLevel = new HashMap<>();
+
+        public void visitMainBlock(SimpleLanguageParser.BlockContext ctx) {
+            enterMainFunction();
+            var fName = currentFunction;
+            var scope = curScope;
+            functionScopes.add(scope);
+            functionNames.add(fName);
+            for (var def : ctx.def()) {
+                if (def.function() != null) {
+                    visitFunction(def.function());
+                }
+            }
+            functionScopes.removeLast();
+            functionNames.removeLast();
+            currentFunction = fName;
+            if (ctx.expression() != null) {
+                visitChildren(ctx.expression());
+            }
+
+            exitFunction();
+            var changed = true;
+            while (changed) {
+                changed = false;
+                for (var fToWait : funcToWait2funcToAdd.keySet()) {
+                    for (var fToAdd : funcToWait2funcToAdd.get(fToWait)) {
+                        for (var nl : funcToNonLocals.get(fToWait)) {
+                            var funcWhereWasFound = nl.fNameWhereFound;
+                            var varId = nl.vId;
+                            if (!containsTheSame(fToAdd, funcWhereWasFound, varId)) {
+                                addNonLocal(fToAdd, varId, funcWhereWasFound);
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public Void visitFunction(SimpleLanguageParser.FunctionContext ctx) {
+            currentFunction = ctx.IDENTIFIER(0).getText();
+            functionLevel.put(currentFunction, functionScopes.size());
+            enterFunction(ctx);
+            visitBlock(ctx.body);
+            exitFunction();
+            return null;
+        }
+
+        @Override
+        public Void visitBlock(SimpleLanguageParser.BlockContext ctx) {
+            var fName = currentFunction;
+            enterBlock(ctx);
+            var scope = curScope;
+            exitBlock();
+            functionScopes.add(scope);
+            functionNames.add(fName);
+            for (var def : ctx.def()) {
+                if (def.function() != null) {
+                    visitFunction(def.function());
+                }
+            }
+            functionScopes.removeLast();
+            functionNames.removeLast();
+            currentFunction = fName;
+            enterBlock(ctx);
+            if (ctx.expression() != null) {
+                visitChildren(ctx.expression());
+            }
+            exitBlock();
+            return null;
+        }
+
+        @Override
+        public Void visitNameAccess(SimpleLanguageParser.NameAccessContext ctx) {
+            var tok = ctx.IDENTIFIER().getSymbol();
+            var tokName = tok.getText();
+            var tokTrStr = asTruffleString(tok, false);
+            calledFName = tokName;
+            if (getLocalIndex(tok) == -1 && !definedNonLocal(currentFunction, tokName)) {
+                for (int i = functionScopes.size() - 1; i >= 0; --i) {
+                    var scope = functionScopes.get(i);
+                    if (scope.getLocalIndex(tokTrStr) != -1) {
+                        addNonLocal(currentFunction, scope.getLocalIndex(tokTrStr), functionNames.get(i), tokName);
+                        break;
+                    }
+                }
+            }
+            visitChildren(ctx);
+            return null;
+        }
+
+        @Override
+        public Void visitMemberCall(SimpleLanguageParser.MemberCallContext ctx) {
+            if (!Objects.equals(functionLevel.get(calledFName), functionLevel.get(currentFunction))) {
+                for (var nl : funcToNonLocals.get(calledFName)) {
+                    var funcWhereWasFound = nl.fNameWhereFound;
+                    var varId = nl.vId;
+                    if (!containsTheSame(currentFunction, funcWhereWasFound, varId)) {
+                        addNonLocal(currentFunction, varId, funcWhereWasFound);
+                    }
+                }
+            } else {
+                if (!funcToWait2funcToAdd.containsKey(calledFName)) {
+                    funcToWait2funcToAdd.put(calledFName, new ArrayList<>());
+                }
+                funcToWait2funcToAdd.get(calledFName).add(currentFunction);
+            }
+            return null;
+        }
     }
 
     private SLExpressionNode createRead(SLExpressionNode nameTerm) {
