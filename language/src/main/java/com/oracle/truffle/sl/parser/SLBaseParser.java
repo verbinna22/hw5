@@ -243,6 +243,25 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
+    protected final List<TruffleString> enterFunctionWithClosure(FunctionContext ctx) {
+        List<TruffleString> result = new ArrayList<>();
+        assert curScope == null;
+
+        curScope = new LocalScope();
+        totalLocals = 0;
+
+        TruffleString cName = TruffleString.fromConstant("@closure", TruffleString.Encoding.UTF_8);
+        curScope.declareLocal(cName);
+        // skip over function name which is also an IDENTIFIER
+        for (int i = 1; i < ctx.IDENTIFIER().size(); i++) {
+            TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);
+            curScope.declareLocal(paramName);
+            result.add(paramName);
+        }
+
+        return result;
+    }
+
     protected final void enterMainFunction() {
         assert curScope == null;
         curScope = new LocalScope();

@@ -45,6 +45,14 @@ func testLam2() {
    write(two2()))))
 }
 
+func testLam3() {
+    var a = 10;
+    func getA() {
+        a
+    }
+    write(getA())
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -142,5 +150,6 @@ changeGlobal();
 changeGlobal();
 changeGlobal();
 testLam2();
+testLam3();
 0
 
