@@ -99,6 +99,8 @@ public class SLNodeParser extends SLBaseParser {
     private final Map<TruffleString, RootCallTarget> functions = new HashMap<>();
     private int maxGlobalId = 0;
     private final Map<TruffleString, Integer> globalToId = new HashMap<>();
+    private boolean mainBlockVisited = false;
+    private final Map<TruffleString, List<TruffleString>> funcToNonLocals = new HashMap<>();
 
     protected SLNodeParser(SLLanguage language, Source source) {
         super(language, source);
@@ -106,6 +108,8 @@ public class SLNodeParser extends SLBaseParser {
 
     @Override
     public Void visitBlock(SimpleLanguageParser.BlockContext ctx) { // add main
+        if (mainBlockVisited) return visitChildren(ctx);
+        mainBlockVisited = true;
         TruffleString functionName = SLStrings.MAIN;
 
         var exprStart = ctx.expression().getStart();
@@ -138,13 +142,7 @@ public class SLNodeParser extends SLBaseParser {
 
         frameDescriptorBuilder = null;
 
-        for (var definition : ctx.def()) {
-            var f = definition.function();
-            if (f != null) {
-                SLNodeParser.this.visitFunction(f);
-            }
-        }
-        return null;
+        return visitChildren(ctx);
     }
 
     @Override
@@ -191,13 +189,7 @@ public class SLNodeParser extends SLBaseParser {
 
         frameDescriptorBuilder = null;
 
-        for (var definition : ctx.body.def()) {
-            var f = definition.function();
-            if (f != null) {
-                SLNodeParser.this.visitFunction(f);
-            }
-        }
-        return null;
+        return visitChildren(ctx);
     }
 
     private SLStringLiteralNode createString(Token name, boolean removeQuotes) {
@@ -764,6 +756,10 @@ public class SLNodeParser extends SLBaseParser {
             final SLParenExpressionNode result = new SLParenExpressionNode(expressionNode);
             result.setSourceSection(start, length);
             return result;
+        }
+
+        private class NonLocalVisitor extends SimpleLanguageBaseVisitor<SLPatternNode> {
+
         }
 
         private class PatternVisitor extends SimpleLanguageBaseVisitor<SLPatternNode> {

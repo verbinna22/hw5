@@ -38,6 +38,13 @@ func testLam() {
    write(two())
 }
 
+func testLam2() {
+   (((func two2() {
+      2
+   }
+   write(two2()))))
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -134,6 +141,6 @@ esac;
 changeGlobal();
 changeGlobal();
 changeGlobal();
-testLam();
+testLam2();
 0
 

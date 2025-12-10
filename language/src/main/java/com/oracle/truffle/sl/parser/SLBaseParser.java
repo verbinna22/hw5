@@ -166,17 +166,20 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         private final Map<TruffleString, Integer> locals;
         // Tracks which locals have been initialized in this scope.
         private final Set<TruffleString> initialized;
+        private final Set<TruffleString> functions;
 
         LocalScope(LocalScope parent) {
             this.parent = parent;
             locals = new HashMap<>();
             initialized = new HashSet<>();
+            functions = new HashSet<>();
         }
 
         LocalScope() {
             this.parent = null;
             locals = new HashMap<>();
             initialized = new HashSet<>();
+            functions = new HashSet<>();
         }
 
         boolean localDeclared(TruffleString name) {
@@ -190,6 +193,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         void declareLocal(TruffleString name) {
             locals.put(name, totalLocals++);
         }
+        void declareFunction(TruffleString name) { functions.add(name); }
 
         /**
          * Returns the unique local index of a name in the current scope. The local index for a
@@ -261,6 +265,10 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
                 for (var variable : variableContext.varSingleDef()) {
                     variables.add(variable.IDENTIFIER().getSymbol());
                 }
+            }
+            var functionContext = definition.function();
+            if (functionContext != null) {
+
             }
         }
         for (Token tok : variables) {
