@@ -44,9 +44,12 @@ import java.math.BigInteger;
 import java.util.*;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.sl.nodes.*;
 import com.oracle.truffle.sl.nodes.expression.*;
 import com.oracle.truffle.sl.nodes.local.*;
+import com.oracle.truffle.sl.nodes.patterns.*;
 import com.oracle.truffle.sl.runtime.SLContext;
+import com.oracle.truffle.sl.runtime.SLSexp;
 import com.oracle.truffle.sl.runtime.SLStrings;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -60,10 +63,6 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.SLLanguage;
-import com.oracle.truffle.sl.nodes.SLAstRootNode;
-import com.oracle.truffle.sl.nodes.SLExpressionNode;
-import com.oracle.truffle.sl.nodes.SLRootNode;
-import com.oracle.truffle.sl.nodes.SLStatementNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;;
 import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ArithmeticContext;
@@ -506,6 +505,25 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitCase_expression(SimpleLanguageParser.Case_expressionContext ctx) {
+            SLExpressionNode expr = expressionVisitor.visitExpression(ctx.expression());
+            List<SLPatternNode> patternNodes = new ArrayList<>();
+            List<SLExpressionNode> branchNodes = new ArrayList<>();
+            var patternVisitor = new PatternVisitor(expr);
+            for (var branch : ctx.case_branches().case_branch()) {
+                patternVisitor.visitCase_branch(branch);
+                patternNodes.add(patternVisitor.pattern);
+                branchNodes.add(patternVisitor.branch);
+                patternVisitor.clear();
+            }
+            var result = new SLCaseExpression(branchNodes.toArray(SLExpressionNode[]::new), patternNodes.toArray(SLPatternNode[]::new), expr);
+            final int start = ctx.getStart().getStartIndex();
+            final int end = ctx.getStop().getStopIndex() + 1;
+            result.setSourceSection(start, end - start);
+            return result;
+        }
+
+        @Override
         public SLExpressionNode visitExpression(ExpressionContext ctx) {
             return createBinary(ctx.or_term(), ctx.OP_SEQ());
         }
@@ -667,6 +685,214 @@ public class SLNodeParser extends SLBaseParser {
             return result;
         }
 
+        private class PatternVisitor extends SimpleLanguageBaseVisitor<SLPatternNode> {
+            SLExpressionNode branch = null;
+            SLPatternNode pattern = null;
+            List<Token> tokens = new ArrayList<>();
+            Set<Token> ts = new HashSet<>();
+            List<SLExpressionNode> nodes = new ArrayList<>();
+            SLExpressionNode baseExpression;
+
+            public PatternVisitor(SLExpressionNode baseExpression) {
+                this.baseExpression = baseExpression;
+            }
+
+            @Override
+            public SLPatternNode visitSexprPattern(SimpleLanguageParser.SexprPatternContext ctx) {
+                var parent = baseExpression;
+                List<SLPatternNode> subNodes = new ArrayList<>();
+                long i = 0;
+                for (var subCtx : ctx.pattern_list().pattern()) {
+                    baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(i++));
+                    baseExpression.addExpressionTag();
+                    subNodes.add(visitPattern(subCtx));
+                }
+                baseExpression = parent;
+                var tag = SLSexp.lTagHash(ctx.UIDENTIFIER().getSymbol().getText());
+                return new SexprPattern(tag, subNodes.toArray(SLPatternNode[]::new));
+            }
+
+            @Override
+            public SLPatternNode visitWildcardPattern(SimpleLanguageParser.WildcardPatternContext ctx) {
+                return new WildCardPattern();
+            }
+
+            @Override
+            public SLPatternNode visitArrayPattern(SimpleLanguageParser.ArrayPatternContext ctx) {
+                var parent = baseExpression;
+                List<SLPatternNode> subNodes = new ArrayList<>();
+                long i = 0;
+                for (var subCtx : ctx.pattern_list().pattern()) {
+                    baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(i++));
+                    baseExpression.addExpressionTag();
+                    subNodes.add(visitPattern(subCtx));
+                }
+                baseExpression = parent;
+                return new ArrayPattern(subNodes.toArray(SLPatternNode[]::new));
+            }
+
+            @Override
+            public SLPatternNode visitListPattern(SimpleLanguageParser.ListPatternContext ctx) {
+                return null;
+            }
+
+            @Override
+            public SLPatternNode visitNamedPattern(SimpleLanguageParser.NamedPatternContext ctx) {
+                var result = visitPattern(ctx.pattern());
+                var tok = ctx.IDENTIFIER().getSymbol();
+                if (ts.contains(tok)) {
+                    throw new RuntimeException("Token redefinition");
+                }
+                tokens.add(tok);
+                ts.add(tok);
+                nodes.add(baseExpression);
+                return result;
+            }
+
+            @Override
+            public SLPatternNode visitDecimalPattern(SimpleLanguageParser.DecimalPatternContext ctx) {
+                return new DecimalPattern(Long.parseLong(ctx.NUMERIC_LITERAL().getSymbol().getText()));
+            }
+
+            @Override
+            public SLPatternNode visitStringPattern(SimpleLanguageParser.StringPatternContext ctx) {
+                return new StringPattern(asTruffleString(ctx.STRING_LITERAL().getSymbol(), true));
+            }
+
+            @Override
+            public SLPatternNode visitCharPattern(SimpleLanguageParser.CharPatternContext ctx) {
+                return new DecimalPattern(ctx.CHAR_LITERAL().getSymbol().getText().charAt(1));
+            }
+
+            @Override
+            public SLPatternNode visitTruePattern(SimpleLanguageParser.TruePatternContext ctx) {
+                return new DecimalPattern(1);
+            }
+
+            @Override
+            public SLPatternNode visitFalsePattern(SimpleLanguageParser.FalsePatternContext ctx) {
+                return new DecimalPattern(0);
+            }
+
+            @Override
+            public SLPatternNode visitBoxTagPattern(SimpleLanguageParser.BoxTagPatternContext ctx) {
+                return new BoxTagPattern();
+            }
+
+            @Override
+            public SLPatternNode visitValTagPattern(SimpleLanguageParser.ValTagPatternContext ctx) {
+                return new ValTagPattern();
+            }
+
+            @Override
+            public SLPatternNode visitStrTagPattern(SimpleLanguageParser.StrTagPatternContext ctx) {
+                return new StrTagPattern();
+            }
+
+            @Override
+            public SLPatternNode visitArrayTagPattern(SimpleLanguageParser.ArrayTagPatternContext ctx) {
+                return new ArrayTagPattern();
+            }
+
+            @Override
+            public SLPatternNode visitSexpTagPattern(SimpleLanguageParser.SexpTagPatternContext ctx) {
+                return new SexpTagPattern();
+            }
+
+            @Override
+            public SLPatternNode visitFunTagPattern(SimpleLanguageParser.FunTagPatternContext ctx) {
+                return null;
+            }
+
+            @Override
+            public SLPatternNode visitConsPattern(SimpleLanguageParser.ConsPatternContext ctx) {
+                return null;
+            }
+
+            @Override
+            public SLPatternNode visitCase_branch(SimpleLanguageParser.Case_branchContext ctx) {
+                // ---
+                pattern = visitPattern(ctx.pattern());
+                // ---
+                List<TruffleString> newLocals = enterBlock(ctx.block());
+
+                for (TruffleString newLocal : newLocals) {
+                    frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, newLocal, null);
+                }
+                declareVariables(tokens);
+                for (var token : tokens) {
+                    frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, asTruffleString(token, false), null);
+                }
+
+                int startPos;
+                int endPos;
+
+                var startToken = ctx.getStart();
+                var endToken = ctx.getStop();
+                if (startToken == null || endToken == null) {
+                    startPos = endPos = 0;
+                } else {
+                    startPos = startToken.getStartIndex();
+                    endPos = endToken.getStopIndex();
+                }
+
+                List<SLExpressionNode> bodyNodes = new ArrayList<>();
+                // ---
+                SLExpressionNode bodyExprNode = (ctx.block().expression() == null) ? new SLSkipExpression() : expressionVisitor.visitExpression(ctx.block().expression());
+                // ---
+
+                bodyNodes.add(bodyExprNode);
+
+                for (var definition : ctx.block().def().reversed()) {
+                    var variableDefinition = definition.varSingleLineDef();
+                    if (variableDefinition != null) {
+                        for (var variable : variableDefinition.varSingleDef().reversed()) {
+                            if (variable.or_term() != null) {
+                                var varToken = variable.IDENTIFIER().getSymbol();
+                                var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                                var result = createAssignment(createString(varToken, false), valueNode, null);
+                                bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < tokens.size(); ++i) {
+                    var varToken = tokens.get(i);
+                    var valueNode = nodes.get(i);
+                    var result = createAssignment(createString(varToken, false), valueNode, null);
+                    bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                }
+
+                exitBlock();
+
+                List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+                flattenBlocks(bodyNodes, flattenedNodes);
+                int n = flattenedNodes.size();
+                for (int i = 0; i < n; i++) {
+                    SLStatementNode statement = flattenedNodes.get(i);
+                    if (statement.hasSource() && !isHaltInCondition(statement)) {
+                        statement.addStatementTag();
+                    }
+                }
+                SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+                if (endPos - startPos > 0) {
+                    blockNode.setSourceSection(startPos, endPos - startPos);
+                } else {
+                    blockNode.setSourceSection(startPos, 0);
+                }
+                branch = blockNode;
+                return null;
+            }
+
+            public void clear() {
+                branch = null;
+                pattern = null;
+                tokens.clear();
+                nodes.clear();
+                ts.clear();
+            }
+        }
     }
 
     private class MemberExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
@@ -798,7 +1024,7 @@ public class SLNodeParser extends SLBaseParser {
         if (valueNode.hasSource()) {
             final int start = assignmentName.getSourceCharIndex();
             final int length = valueNode.getSourceEndIndex() - start;
-            result.setSourceSection(start, length);
+            result.setSourceSection(start, Math.max(length, 0));
         }
 
         if (index == null) {

@@ -137,12 +137,163 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSexp_expression(SimpleLanguageParser.Sexp_expressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#pattern_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPattern_list(SimpleLanguageParser.Pattern_listContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#sexprPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSexprPattern(SimpleLanguageParser.SexprPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#wildcardPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWildcardPattern(SimpleLanguageParser.WildcardPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#arrayPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayPattern(SimpleLanguageParser.ArrayPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#listPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitListPattern(SimpleLanguageParser.ListPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#namedPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNamedPattern(SimpleLanguageParser.NamedPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#decimalPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDecimalPattern(SimpleLanguageParser.DecimalPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#stringPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringPattern(SimpleLanguageParser.StringPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#charPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCharPattern(SimpleLanguageParser.CharPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#truePattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTruePattern(SimpleLanguageParser.TruePatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#falsePattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFalsePattern(SimpleLanguageParser.FalsePatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#boxTagPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoxTagPattern(SimpleLanguageParser.BoxTagPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#valTagPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitValTagPattern(SimpleLanguageParser.ValTagPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#strTagPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStrTagPattern(SimpleLanguageParser.StrTagPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#arrayTagPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayTagPattern(SimpleLanguageParser.ArrayTagPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#sexpTagPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSexpTagPattern(SimpleLanguageParser.SexpTagPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#funTagPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunTagPattern(SimpleLanguageParser.FunTagPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#patternInBraces}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPatternInBraces(SimpleLanguageParser.PatternInBracesContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#simplePattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSimplePattern(SimpleLanguageParser.SimplePatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#consPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConsPattern(SimpleLanguageParser.ConsPatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#pattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPattern(SimpleLanguageParser.PatternContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#case_branch}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCase_branch(SimpleLanguageParser.Case_branchContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#case_branches}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCase_branches(SimpleLanguageParser.Case_branchesContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#case_expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCase_expression(SimpleLanguageParser.Case_expressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code IfExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code CaseExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCaseExpr(SimpleLanguageParser.CaseExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code ArrayExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.

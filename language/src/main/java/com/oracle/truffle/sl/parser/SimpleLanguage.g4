@@ -156,8 +156,122 @@ sexp_expression
     : UIDENTIFIER ('(' expr_list ')')?
     ;
 
+pattern_list
+    : pattern (',' pattern)*
+    ;
+
+sexprPattern
+    : UIDENTIFIER ('(' pattern_list ')')?
+    ;
+
+wildcardPattern
+    : '_'
+    ;
+
+arrayPattern
+    : '[' (pattern_list)? ']'
+    ;
+
+listPattern
+    : '{' (pattern_list)? '}'
+    ;
+
+namedPattern
+    : IDENTIFIER '@' pattern
+    ;
+
+decimalPattern
+    : NUMERIC_LITERAL
+    ;
+
+stringPattern
+    : STRING_LITERAL
+    ;
+
+charPattern
+    : CHAR_LITERAL
+    ;
+
+truePattern
+    : 'true'
+    ;
+
+falsePattern
+    : 'false'
+    ;
+
+boxTagPattern
+    : '#box'
+    ;
+
+valTagPattern
+    : '#val'
+    ;
+
+strTagPattern
+    : '#str'
+    ;
+
+arrayTagPattern
+    : '#array'
+    ;
+
+sexpTagPattern
+    : '#sexp'
+    ;
+
+funTagPattern
+    : '#fun'
+    ;
+
+patternInBraces
+    : '(' pattern ')'
+    ;
+
+simplePattern
+    : sexprPattern
+    | wildcardPattern
+    | arrayPattern
+    | listPattern
+    | namedPattern
+    | decimalPattern
+    | stringPattern
+    | charPattern
+    | truePattern
+    | falsePattern
+    | boxTagPattern
+    | valTagPattern
+    | strTagPattern
+    | arrayTagPattern
+    | sexpTagPattern
+    | funTagPattern
+    | patternInBraces
+    ;
+
+consPattern
+    : simplePattern ':' pattern
+    ;
+
+pattern
+    : consPattern
+    | simplePattern
+    ;
+
+case_branch
+    : pattern '->' block
+    ;
+
+case_branches
+    : case_branch ('|' case_branch)*
+    ;
+
+case_expression
+    : 'case' expression 'of' case_branches 'esac'
+    ;
+
 factor
 	: if_expression                 # IfExpr
+	| case_expression               # CaseExpr
 	| array_expression              # ArrayExpr
 	| sexp_expression               # SexpExpr
 	| skip_expression               # SkipExpr
@@ -200,9 +314,11 @@ fragment OCT_DIGIT : [0-7];
 fragment BINARY_DIGIT : '0' | '1';
 fragment TAB : '\t';
 fragment STRING_CHAR : ~('"' | '\r' | '\n');
+fragment CHAR : ~('\'' | '\r' | '\n');
 
 IDENTIFIER : LLETTER (LETTER | DIGIT)*;
 UIDENTIFIER : ULETTER (LETTER | DIGIT)*;
 STRING_LITERAL : '"' STRING_CHAR* '"';
+CHAR_LITERAL : '\'' CHAR '\'';
 NUMERIC_LITERAL : '0' | NON_ZERO_DIGIT DIGIT*;
 

@@ -1,6 +1,9 @@
 (*
  * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+ mvn package -DskipTests
+ ./sl ./HelloEqualsWorld.sl
+ --engine.TraceCompilationDetails
  *)
 
 func doIt(a) {
@@ -28,6 +31,7 @@ var k = 0;
 var j = k * 15 * 15;
 var ijk = 11;
 var arr;
+var arr2 = [1, 2, 3];
 
 i := 0;
 write("ijk test");
@@ -107,5 +111,12 @@ while i < 10 do
   doIt(i);
   i := i + 1
 od;
+case arr2 of
+    0 -> write("0")
+    | 1 -> write("1")
+    | 239 -> write("239")
+    | a@[1, b@_, 3] -> write(b)
+    | a@[1, _, 1] -> write("err")
+esac;
 0
 

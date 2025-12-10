@@ -276,6 +276,17 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
+    protected final void declareVariables(List<Token> tokens) {
+        for (Token tok : tokens) {
+            TruffleString name = asTruffleString(tok, false);
+            if (!curScope.localDeclared(name)) {
+                curScope.declareLocal(name);
+            } else {
+                semErr(tok, tok.getText() + " variable redefinition");
+            }
+        }
+    }
+
     protected final void exitBlock() {
         curScope = curScope.parent;
     }

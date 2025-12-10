@@ -1,7 +1,5 @@
 package com.oracle.truffle.sl.runtime;
 
-import com.oracle.truffle.api.strings.TruffleString;
-
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -29,6 +27,8 @@ public class SLSexp {
     public long length() {
         return elements.length;
     }
+
+    public long getTag() { return tag; }
 
     @Override
     public String toString() {
