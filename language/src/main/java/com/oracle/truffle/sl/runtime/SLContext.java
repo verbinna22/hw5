@@ -113,7 +113,7 @@ public final class SLContext {
     private final BufferedReader input;
     private final PrintWriter output;
     private final SLFunctionRegistry functionRegistry;
-//    private final GlobalsObject globalsObject = new GlobalsObject();
+    public final GlobalsObject globalsObject = new GlobalsObject();
     private final AllocationReporter allocationReporter;
     private final List<SLFunction> shutdownHooks = new ArrayList<>();
 

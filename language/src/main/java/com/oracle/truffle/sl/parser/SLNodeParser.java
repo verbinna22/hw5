@@ -97,6 +97,8 @@ public class SLNodeParser extends SLBaseParser {
     private SLExpressionVisitor expressionVisitor = new SLExpressionVisitor();
     private int loopDepth = 0;
     private final Map<TruffleString, RootCallTarget> functions = new HashMap<>();
+    private int maxGlobalId = 0;
+    private final Map<TruffleString, Integer> globalToId = new HashMap<>();
 
     protected SLNodeParser(SLLanguage language, Source source) {
         super(language, source);
@@ -118,7 +120,7 @@ public class SLNodeParser extends SLBaseParser {
 
         enterMainFunction();
 
-        SLBlockExpression bodyNode = (SLBlockExpression) expressionVisitor.visitBlock(ctx);
+        SLBlockExpression bodyNode = (SLBlockExpression) expressionVisitor.visitMainBlock(ctx);
 
         exitFunction();
 
@@ -243,6 +245,79 @@ public class SLNodeParser extends SLBaseParser {
             }
 
             exitBlock();
+
+            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+            flattenBlocks(bodyNodes, flattenedNodes);
+            int n = flattenedNodes.size();
+            for (int i = 0; i < n; i++) {
+                SLStatementNode statement = flattenedNodes.get(i);
+                if (statement.hasSource() && !isHaltInCondition(statement)) {
+                    statement.addStatementTag();
+                }
+            }
+            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+            if (endPos - startPos > 0) {
+                blockNode.setSourceSection(startPos, endPos - startPos);
+            } else {
+                blockNode.setSourceSection(startPos, 0);
+            }
+            return blockNode;
+        }
+
+        public SLExpressionNode visitMainBlock(BlockContext ctx) {
+            List<Token> variables = new ArrayList<>();
+            for (var definition : ctx.def()) {
+                var variableContext = definition.varSingleLineDef();
+                if (variableContext != null) {
+                    for (var variable : variableContext.varSingleDef()) {
+                        variables.add(variable.IDENTIFIER().getSymbol());
+                    }
+                }
+            }
+            for (Token tok : variables) {
+                TruffleString name = asTruffleString(tok, false);
+                if (!globalToId.containsKey(name)) {
+                    globalToId.put(name, maxGlobalId++);
+                } else {
+                    semErr(tok, tok.getText() + " variable redefinition");
+                }
+            }
+
+            int startPos;
+            int endPos;
+
+            var startToken = ctx.getStart();
+            var endToken = ctx.getStop();
+            if (startToken == null || endToken == null) {
+                startPos = endPos = 0;
+            } else {
+                startPos = startToken.getStartIndex();
+                endPos = endToken.getStopIndex();
+            }
+
+            List<SLExpressionNode> bodyNodes = new ArrayList<>();
+
+            if (ctx.expression() != null) {
+                bodyNodes.add(expressionVisitor.visitExpression(ctx.expression()));
+            } else {
+                bodyNodes.add(new SLSkipExpression());
+            }
+
+            SLContext.get(bodyNodes.get(0)).globalsObject.globals = new Object[maxGlobalId];
+
+            for (var definition : ctx.def().reversed()) {
+                var variableDefinition = definition.varSingleLineDef();
+                if (variableDefinition != null) {
+                    for (var variable : variableDefinition.varSingleDef().reversed()) {
+                        if (variable.or_term() != null) {
+                            var varToken = variable.IDENTIFIER().getSymbol();
+                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var result = createAssignment(createString(varToken, false), valueNode, null);
+                            bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                        }
+                    }
+                }
+            }
 
             List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
             flattenBlocks(bodyNodes, flattenedNodes);
@@ -989,7 +1064,7 @@ public class SLNodeParser extends SLBaseParser {
         if (frameSlot != -1) {
             result = SLReadLocalVariableNodeGen.create(frameSlot);
         } else {
-            throw new RuntimeException("not found");
+            result = new SLReadGlobalVariableNode(globalToId.get(name));
         }
         result.setSourceSection(nameTerm.getSourceCharIndex(), nameTerm.getSourceLength());
         result.addExpressionTag();
@@ -1012,7 +1087,7 @@ public class SLNodeParser extends SLBaseParser {
         int frameSlot = getLocalIndex(name);
         SLExpressionNode result;
         if (frameSlot == -1) {
-            throw new RuntimeException("not found");
+            result = new SLWriteGlobalVariableNode(globalToId.get(name), valueNode);
         } else {
             assert frameSlot != -1;
             boolean newVariable = initializeLocal(name);

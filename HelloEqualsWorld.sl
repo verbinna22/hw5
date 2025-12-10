@@ -26,6 +26,11 @@ func one() {
   1
 }
 
+func changeGlobal() {
+    i := i + 12345;
+    write(i)
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -118,5 +123,8 @@ case arr2 of
     | a@[1, b@_, 3] -> write(b)
     | a@[1, _, 1] -> write("err")
 esac;
+changeGlobal();
+changeGlobal();
+changeGlobal();
 0
 
