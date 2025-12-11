@@ -365,7 +365,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         for (var b : builtins) {
             fScope.declareBuiltin(b);
         }
-        //System.out.println("|||||||||||||||||||||||||||||||||||||||||||||||||"); ////
+        // System.out.println("|||||||||||||||||||||||||||||||||||||||||||||||||"); ////
     }
 
     protected final void exitFunction() {
@@ -375,7 +375,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
     protected void addFunctionsInScope(BlockContext ctx) {
         fScope = new FunctionScope(fScope);
-        //System.out.println("------------------------------------------------"); ////
+        // System.out.println("------------------------------------------------"); ////
         for (var f: ctx.def()) {
             var fn = f.function();
             if (fn != null) {

@@ -118,7 +118,12 @@ public class SLNodeParser extends SLBaseParser {
 
     @Override
     public Void visitBlock(SimpleLanguageParser.BlockContext ctx) { // add main
-        if (mainBlockVisited) return visitChildren(ctx);
+        if (mainBlockVisited) {
+            addFunctionsInScope(ctx);
+            visitChildren(ctx);
+            exitScope();
+            return null;
+        }
         mainBlockVisited = true;
         new NonLocalVisitor().visitMainBlock(ctx);
         // ----
@@ -173,7 +178,10 @@ public class SLNodeParser extends SLBaseParser {
 
         frameDescriptorBuilder = null;
 
-        return visitChildren(ctx);
+        addFunctionsInScope(ctx);
+        visitChildren(ctx);
+        exitScope();
+        return null;
     }
 
     @Override
@@ -1226,6 +1234,16 @@ public class SLNodeParser extends SLBaseParser {
         var curFScope = fScope;
         var curVScope = curScope;
         var tName = TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8);
+//        System.out.println("BEG"); ////
+//        var cfs = curFScope;
+//        while (cfs.parent != null) {
+//            System.out.println("------------------"); ////
+//            for (var k : curFScope.functions.keySet()) {
+//                System.out.println("Key:" + k + " Val:" + curFScope.functions.get(k));
+//            }
+//            System.out.println("@@@@@@@@@@@@@@@@@@");
+//            cfs = cfs.parent;
+//        }
         while (!curFScope.functions.containsKey(tName) && !curVScope.localDeclared(tName) && curFScope.parent != null && curVScope.parent != null) {
             curFScope = curFScope.parent;
             curVScope = curVScope.parent;
@@ -1331,6 +1349,7 @@ public class SLNodeParser extends SLBaseParser {
             var fName = currentFunction;
             var fMName = currentMFunction;
             var scope = curScope;
+            addFunctionsInScope(ctx);
             functionScopes.add(scope);
             functionMNames.add(fMName);
             visitFunctionsInsideBlock(ctx);
@@ -1598,7 +1617,7 @@ public class SLNodeParser extends SLBaseParser {
                 var id = mFuncToVarNameToInd.get(currentMFunction).get(name.toString());
                 result = SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id));
             } else {
-                //System.out.println(name); ////
+                // System.out.println(name); ////
                 result = new SLReadGlobalVariableNode(globalToId.get(name));
             }
         }
