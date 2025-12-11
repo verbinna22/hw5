@@ -1223,7 +1223,20 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     public boolean isFunction(String name) {
-        return accessibleWith(name) != null; // TODO
+        var curFScope = fScope;
+        var curVScope = curScope;
+        var tName = TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8);
+        while (!curFScope.functions.containsKey(tName) && !curVScope.localDeclared(tName) && curFScope.parent != null && curVScope.parent != null) {
+            curFScope = curFScope.parent;
+            curVScope = curVScope.parent;
+        }
+        if (curFScope.functions.containsKey(tName)) {
+            return true;
+        }
+        if (curVScope.localDeclared(tName)) {
+            return false;
+        }
+        return curFScope.accessibleWith(tName) != null;
     }
 
     List<TruffleString> builtins = Arrays.asList(

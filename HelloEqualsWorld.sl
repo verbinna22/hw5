@@ -84,6 +84,18 @@ func testLam7() {
     tst()
 }
 
+func fX() {
+    func fX() {
+        1
+    }
+    write(fX())
+}
+
+func testLam8() {
+    var testLam7 = 0;
+    write(testLam7)
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -186,5 +198,7 @@ testLam4();
 testLam5();
 testLam6();
 testLam7();
+fX();
+testLam8();
 0
 

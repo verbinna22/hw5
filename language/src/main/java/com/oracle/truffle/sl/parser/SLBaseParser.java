@@ -162,7 +162,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
      */
     protected class FunctionScope {
         final FunctionScope parent;
-        private final Map<TruffleString, TruffleString> functions;
+        protected final Map<TruffleString, TruffleString> functions;
 
 
         protected FunctionScope(FunctionScope parent) {
