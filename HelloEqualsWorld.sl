@@ -60,6 +60,15 @@ func testLam4() {
     printA(123456)
 }
 
+func testLam5() {
+    func tstInt1() {
+        write("OK")
+    }
+    var xxxx;
+    xxxx := tstInt1;
+    xxxx()
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -159,5 +168,6 @@ changeGlobal();
 testLam2();
 testLam3();
 testLam4();
+testLam5();
 0
 
