@@ -53,6 +53,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.sl.SLException;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.runtime.SLFunction;
+import com.oracle.truffle.sl.runtime.SLFunctionWithClosure;
 
 /**
  * The node for function invocation in SL. Since SL has first class functions, the {@link SLFunction
@@ -87,10 +88,18 @@ public final class SLInvokeNode extends SLExpressionNode {
          * array length is really constant.
          */
         CompilerAsserts.compilationConstant(argumentNodes.length);
-
-        Object[] argumentValues = new Object[argumentNodes.length];
+        int shift = 0;
+        Object[] argumentValues;
+        if (function instanceof SLFunctionWithClosure fwc) {
+            argumentValues = new Object[argumentNodes.length + 1];
+            shift = 1;
+            argumentValues[0] = fwc.closure;
+            function = fwc.function;
+        } else {
+            argumentValues = new Object[argumentNodes.length];
+        }
         for (int i = 0; i < argumentNodes.length; i++) {
-            argumentValues[i] = argumentNodes[i].executeGeneric(frame);
+            argumentValues[i + shift] = argumentNodes[i].executeGeneric(frame);
         }
 
         try {

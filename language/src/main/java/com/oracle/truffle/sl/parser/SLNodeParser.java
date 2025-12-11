@@ -1135,6 +1135,7 @@ public class SLNodeParser extends SLBaseParser {
 
     }
 
+    private Set<String> allFunctionNamesPrecalculated = new HashSet<>();
     private class NonLocalVisitor extends SimpleLanguageBaseVisitor<Void> {
         private List<LocalScope> functionScopes = new ArrayList<>();
         private List<String> functionNames = new ArrayList<>();
@@ -1142,7 +1143,6 @@ public class SLNodeParser extends SLBaseParser {
         private String calledFName = null;
         private Map<String, ArrayList<String>> funcToWait2funcToAdd = new HashMap<>();
         private Map<String, Integer> functionLevel = new HashMap<>();
-        private Set<String> fNames = new HashSet<>();
 
         private boolean definedNonLocal(String func, String varName) {
             if (funcToVarNameToInd.containsKey(func)) {
@@ -1228,7 +1228,7 @@ public class SLNodeParser extends SLBaseParser {
         @Override
         public Void visitFunction(SimpleLanguageParser.FunctionContext ctx) {
             currentFunction = ctx.IDENTIFIER(0).getText();
-            fNames.add(currentFunction);
+            allFunctionNamesPrecalculated.add(currentFunction);
             // System.out.println(currentFunction);//
             functionLevel.put(currentFunction, functionScopes.size());
             enterFunction(ctx);
@@ -1366,7 +1366,7 @@ public class SLNodeParser extends SLBaseParser {
             var tokName = tok.getText();
             var tokTrStr = asTruffleString(tok, false);
             calledFName = tokName;
-            if (!fNames.contains(tokName)) {
+            if (!allFunctionNamesPrecalculated.contains(tokName)) {
                 if (getLocalIndex(tok) == -1 && !definedNonLocal(currentFunction, tokName)) {
                     for (int i = functionScopes.size() - 1; i >= 0; --i) {
                         var scope = functionScopes.get(i);
@@ -1416,6 +1416,10 @@ public class SLNodeParser extends SLBaseParser {
     private SLExpressionNode createRead(SLExpressionNode nameTerm) {
         final TruffleString name = ((SLStringLiteralNode) nameTerm).executeGeneric(null);
         final SLExpressionNode result;
+        if (allFunctionNamesPrecalculated.contains(name.toString())) {
+            // process := fname
+            return null;
+        }
         final int frameSlot = getLocalIndex(name);
         if (frameSlot != -1) {
             result = SLReadLocalVariableNodeGen.create(frameSlot);
