@@ -63,6 +63,7 @@ public abstract class SLReadlnBuiltin extends SLBuiltinNode {
     @Specialization
     public long read(@Cached TruffleString.FromJavaStringNode fromJavaStringNode,
                     @Bind SLContext context) {
+        context.getOutput().print(" > ");
         var result = doRead(context.getInput());
         return Long.parseLong(result);
     }
