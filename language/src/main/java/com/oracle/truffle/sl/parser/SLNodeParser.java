@@ -176,6 +176,65 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     @Override
+    public Void visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx) {
+        int functionStartPos = ctx.b.getStartIndex();
+        TruffleString functionName = TruffleString.fromConstant("@lambda" + functionStartPos, TruffleString.Encoding.UTF_8);
+        currentFunction = functionName.toString();
+
+        frameDescriptorBuilder = FrameDescriptor.newBuilder();
+        List<SLExpressionNode> methodNodes = new ArrayList<>();
+
+        int i = 0;
+        int parameterCount;
+        if (funcToNonLocals.containsKey(functionName.toString()) && !funcToNonLocals.get(functionName.toString()).isEmpty()) {
+            parameterCount = enterLambdaWithClosure(ctx).size();
+            TruffleString paramName = TruffleString.fromConstant("@closure", TruffleString.Encoding.UTF_8);
+            int localIndex = frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, paramName, null);
+            assert localIndex == i;
+
+            final SLReadArgumentNode readArg = new SLReadArgumentNode(i);
+            readArg.setSourceSection(0, 0);
+            SLExpressionNode assignment = createAssignment(createString(paramName), readArg, i);
+            methodNodes.add(assignment);
+            i++;
+        } else {
+            parameterCount = enterLambda(ctx).size();
+        }
+        for (; i < parameterCount; i++) {
+            Token paramToken = ctx.IDENTIFIER(i).getSymbol();
+
+            TruffleString paramName = asTruffleString(paramToken, false);
+            int localIndex = frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, paramName, null);
+            assert localIndex == i;
+
+            final SLReadArgumentNode readArg = new SLReadArgumentNode(i);
+            readArg.setSourceSection(paramToken.getStartIndex(), paramToken.getText().length());
+            SLExpressionNode assignment = createAssignment(createString(paramToken, false), readArg, i);
+            methodNodes.add(assignment);
+        }
+
+        SLBlockExpression bodyNode = (SLBlockExpression) expressionVisitor.visitBlock(ctx.body);
+
+        exitFunction();
+
+        methodNodes.addAll(bodyNode.getExpression());
+        final int bodyEndPos = bodyNode.getSourceEndIndex();
+        final SourceSection functionSrc = source.createSection(functionStartPos, bodyEndPos - functionStartPos);
+        final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
+        methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
+
+        final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
+        functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
+
+        final SLRootNode rootNode = new SLAstRootNode(language, frameDescriptorBuilder.build(), functionBodyNode, functionSrc, functionName);
+        functions.put(functionName, rootNode.getCallTarget());
+
+        frameDescriptorBuilder = null;
+
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Void visitFunction(FunctionContext ctx) {
 
         Token nameToken = ctx.IDENTIFIER(0).getSymbol();
@@ -186,7 +245,6 @@ public class SLNodeParser extends SLBaseParser {
         int functionStartPos = nameToken.getStartIndex();
         frameDescriptorBuilder = FrameDescriptor.newBuilder();
         List<SLExpressionNode> methodNodes = new ArrayList<>();
-
 
 
         int i = 0;
@@ -252,6 +310,11 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     private class SLExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
+        @Override
+        public SLExpressionNode visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx) {
+            return createRead(createString(TruffleString.fromConstant("@lambda" + ctx.b.getStartIndex(), TruffleString.Encoding.UTF_8)));
+        }
+
         @Override
         public SLExpressionNode visitBlock(BlockContext ctx) {
             List<TruffleString> newLocals = enterBlock(ctx);
@@ -1153,6 +1216,24 @@ public class SLNodeParser extends SLBaseParser {
         private Map<String, ArrayList<String>> funcToWait2funcToAdd = new HashMap<>();
         private Map<String, Integer> functionLevel = new HashMap<>();
 
+        private class LambdaNLVisitor extends SimpleLanguageBaseVisitor<Void> {
+            @Override
+            public Void visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx) {
+                currentFunction = "@lambda" + ctx.b.getStartIndex();
+                allFunctionNamesPrecalculated.add(currentFunction);
+                // System.out.println(currentFunction);//
+                functionLevel.put(currentFunction, functionScopes.size());
+                enterLambda(ctx);
+                NonLocalVisitor.this.visitBlock(ctx.body);
+                // System.out.println("exit visitFunction " + currentFunction); //
+                return null;
+            }
+            @Override
+            public Void visitBlock(SimpleLanguageParser.BlockContext ctx) {
+                return null;
+            }
+        }
+
         private boolean definedNonLocal(String func, String varName) {
             if (funcToVarNameToInd.containsKey(func)) {
                 return funcToVarNameToInd.get(func).containsKey(varName);
@@ -1167,6 +1248,11 @@ public class SLNodeParser extends SLBaseParser {
 
         private boolean wasFuncProcessed(String func) {
             return funcToVarNameToInd.containsKey(func);
+        }
+
+        @Override
+        public Void visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx) {
+            return null;
         }
 
         private void addNonLocal(String func, Integer varId, String funcWhereFound, String varName) {
@@ -1196,17 +1282,24 @@ public class SLNodeParser extends SLBaseParser {
             funcToFoundFuncToVarIdToInd.get(func).get(funcWhereFound).put(varId, ind);
         }
 
+        private void visitFunctionsInsideBlock(SimpleLanguageParser.BlockContext ctx) {
+            for (var def : ctx.def()) {
+                if (def.function() != null) {
+                    visitFunction(def.function());
+                }
+            }
+            if (ctx.expression() != null) {
+                new LambdaNLVisitor().visitChildren(ctx.expression());
+            }
+        }
+
         public void visitMainBlock(SimpleLanguageParser.BlockContext ctx) {
             enterMainFunction();
             var fName = currentFunction;
             var scope = curScope;
             functionScopes.add(scope);
             functionNames.add(fName);
-            for (var def : ctx.def()) {
-                if (def.function() != null) {
-                    visitFunction(def.function());
-                }
-            }
+            visitFunctionsInsideBlock(ctx);
             functionScopes.removeLast();
             functionNames.removeLast();
             currentFunction = fName;
@@ -1256,11 +1349,7 @@ public class SLNodeParser extends SLBaseParser {
             exitFunction();
             functionScopes.add(scope);
             functionNames.add(fName);
-            for (var def : ctx.def()) {
-                if (def.function() != null) {
-                    visitFunction(def.function());
-                }
-            }
+            visitFunctionsInsideBlock(ctx);
             curScope = functionScopes.removeLast();
             functionNames.removeLast();
             currentFunction = fName;
@@ -1280,11 +1369,7 @@ public class SLNodeParser extends SLBaseParser {
             exitFunction();
             functionScopes.add(scope);
             functionNames.add(fName);
-            for (var def : ctx.init.def()) {
-                if (def.function() != null) {
-                    visitFunction(def.function());
-                }
-            }
+            visitFunctionsInsideBlock(ctx.init);
             curScope = functionScopes.removeLast();
             functionNames.removeLast();
             currentFunction = fName;
@@ -1307,11 +1392,7 @@ public class SLNodeParser extends SLBaseParser {
             exitFunction();
             functionScopes.add(scope);
             functionNames.add(fName);
-            for (var def : ctx.body.def()) {
-                if (def.function() != null) {
-                    visitFunction(def.function());
-                }
-            }
+            visitFunctionsInsideBlock(ctx.body);
             curScope = functionScopes.removeLast();
             functionNames.removeLast();
             currentFunction = fName;
@@ -1347,11 +1428,7 @@ public class SLNodeParser extends SLBaseParser {
             exitFunction();
             functionScopes.add(scope);
             functionNames.add(fName);
-            for (var def : ctx.block().def()) {
-                if (def.function() != null) {
-                    visitFunction(def.function());
-                }
-            }
+            visitFunctionsInsideBlock(ctx.block());
             curScope = functionScopes.removeLast();
             functionNames.removeLast();
             currentFunction = fName;

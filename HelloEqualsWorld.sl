@@ -69,6 +69,14 @@ func testLam5() {
     xxxx()
 }
 
+func testLam6() {
+    var yyyy;
+    yyyy := func () {
+        write("OK")
+    };
+    yyyy()
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -169,5 +177,6 @@ testLam2();
 testLam3();
 testLam4();
 testLam5();
+testLam6();
 0
 

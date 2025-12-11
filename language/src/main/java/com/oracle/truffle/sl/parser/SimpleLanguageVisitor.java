@@ -281,12 +281,25 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCase_expression(SimpleLanguageParser.Case_expressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#lambda_expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code IfExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code LambdaExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLambdaExpr(SimpleLanguageParser.LambdaExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code CaseExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.

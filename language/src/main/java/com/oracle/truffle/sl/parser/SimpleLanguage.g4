@@ -269,8 +269,14 @@ case_expression
     : 'case' expression 'of' case_branches 'esac'
     ;
 
+lambda_expression
+    : b='func' s='(' (IDENTIFIER (',' IDENTIFIER)*)? ')'
+             		'{' body=block '}'
+    ;
+
 factor
 	: if_expression                 # IfExpr
+	| lambda_expression             # LambdaExpr
 	| case_expression               # CaseExpr
 	| array_expression              # ArrayExpr
 	| sexp_expression               # SexpExpr
