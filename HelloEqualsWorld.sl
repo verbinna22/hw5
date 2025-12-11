@@ -77,6 +77,13 @@ func testLam6() {
     yyyy()
 }
 
+func testLam7() {
+    func tst() {
+        write(stacktrace())
+    }
+    tst()
+}
+
 var i;
 var k = 0;
 var j = k * 15 * 15;
@@ -178,5 +185,6 @@ testLam3();
 testLam4();
 testLam5();
 testLam6();
+testLam7();
 0
 

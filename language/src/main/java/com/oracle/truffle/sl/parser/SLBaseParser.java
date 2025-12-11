@@ -160,26 +160,85 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
     /**
      * Maintains lexical scoping information.
      */
+    protected class FunctionScope {
+        final FunctionScope parent;
+        private final Map<TruffleString, TruffleString> functions;
+
+
+        protected FunctionScope(FunctionScope parent) {
+            this.parent = parent;
+            this.functions = new HashMap<>();
+        }
+
+        protected FunctionScope() {
+            this.parent = null;
+            this.functions = new HashMap<>();
+        }
+
+        TruffleString mangleName(TruffleString name, int sPos) {
+            if (name.toString().startsWith("@")) {
+                return name;
+            }
+            StringBuilder result = new StringBuilder("L" + name + "L" + sPos);
+            return TruffleString.fromConstant(result.toString(), TruffleString.Encoding.UTF_8);
+        }
+
+        void declareFunction(String name, int sPos) {
+            functions.put(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8), mangleName(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8), sPos));
+        }
+
+        void declareBuiltin(TruffleString name) {
+            functions.put(name, name);
+        }
+
+        TruffleString accessibleWith(TruffleString name) {
+            if (name.toString().startsWith("@")) {
+                return name;
+            }
+            var nameToMangleNameAccessor = this;
+            while (!nameToMangleNameAccessor.functions.containsKey(name) && nameToMangleNameAccessor.parent != null) {
+                nameToMangleNameAccessor = nameToMangleNameAccessor.parent;
+            }
+            if (nameToMangleNameAccessor.functions.containsKey(name)) {
+                return nameToMangleNameAccessor.functions.get(name);
+            }
+            return null;
+        }
+    }
+
+    String mangleName(String name, int sPos) {
+        return fScope.mangleName(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8), sPos).toString();
+    }
+
+    String mangleName(TruffleString name, int sPos) {
+        return fScope.mangleName(name, sPos).toString();
+    }
+
+    String accessibleWith(String name) {
+        var result = fScope.accessibleWith(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8));
+        if (result != null) {
+            return result.toString();
+        }
+        return null;
+    }
+
     protected class LocalScope {
         final LocalScope parent;
         // Maps local names to a unique index.
         private final Map<TruffleString, Integer> locals;
         // Tracks which locals have been initialized in this scope.
         private final Set<TruffleString> initialized;
-        private final Set<TruffleString> functions;
 
         LocalScope(LocalScope parent) {
             this.parent = parent;
             locals = new HashMap<>();
             initialized = new HashSet<>();
-            functions = new HashSet<>();
         }
 
         LocalScope() {
             this.parent = null;
             locals = new HashMap<>();
             initialized = new HashSet<>();
-            functions = new HashSet<>();
         }
 
         boolean localDeclared(TruffleString name) {
@@ -193,7 +252,6 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         void declareLocal(TruffleString name) {
             locals.put(name, totalLocals++);
         }
-        void declareFunction(TruffleString name) { functions.add(name); }
 
         /**
          * Returns the unique local index of a name in the current scope. The local index for a
@@ -225,8 +283,9 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
     private int totalLocals = 0;
     protected LocalScope curScope = null;
+    protected FunctionScope fScope = null;
 
-    protected final List<TruffleString> enterFunction(FunctionContext ctx) {
+    protected final List<TruffleString> enterFunction(FunctionContext ctx, TruffleString fname) {
         List<TruffleString> result = new ArrayList<>();
         assert curScope == null;
 
@@ -243,7 +302,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
-    protected final List<TruffleString> enterLambda(SimpleLanguageParser.Lambda_expressionContext ctx) {
+    protected final List<TruffleString> enterLambda(SimpleLanguageParser.Lambda_expressionContext ctx, TruffleString lambdaName) {
         List<TruffleString> result = new ArrayList<>();
         assert curScope == null;
 
@@ -259,7 +318,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
-    protected final List<TruffleString> enterFunctionWithClosure(FunctionContext ctx) {
+    protected final List<TruffleString> enterFunctionWithClosure(FunctionContext ctx, TruffleString fname) {
         List<TruffleString> result = new ArrayList<>();
         assert curScope == null;
 
@@ -278,7 +337,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
-    protected final List<TruffleString> enterLambdaWithClosure(SimpleLanguageParser.Lambda_expressionContext ctx) {
+    protected final List<TruffleString> enterLambdaWithClosure(SimpleLanguageParser.Lambda_expressionContext ctx, TruffleString lambdaName) {
         List<TruffleString> result = new ArrayList<>();
         assert curScope == null;
 
@@ -297,15 +356,36 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         return result;
     }
 
-    protected final void enterMainFunction() {
+    protected final void enterMainFunction(List<TruffleString> builtins) {
         assert curScope == null;
+        assert fScope == null;
+        fScope = new FunctionScope();
         curScope = new LocalScope();
         totalLocals = 0;
+        for (var b : builtins) {
+            fScope.declareBuiltin(b);
+        }
     }
 
     protected final void exitFunction() {
         curScope = curScope.parent;
         assert curScope == null;
+    }
+
+    protected void addFunctionsInScope(BlockContext ctx) {
+        fScope = new FunctionScope(fScope);
+        for (var f: ctx.def()) {
+            var fn = f.function();
+            if (fn != null) {
+                fScope.declareFunction(fn.IDENTIFIER(0).getSymbol().getText(), fn.s.getStartIndex());
+            }
+        }
+        System.out.println("enterb"); ////
+    }
+
+    protected void exitScope() {
+        fScope = fScope.parent;
+        System.out.println("exitb"); ////
     }
 
     protected final List<TruffleString> enterBlock(BlockContext ctx) {
@@ -323,7 +403,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
             var functionContext = definition.function();
             if (functionContext != null) {
 
-            }
+            } // TODO remove
         }
         for (Token tok : variables) {
             TruffleString name = asTruffleString(tok, false);
