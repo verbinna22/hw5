@@ -1044,7 +1044,11 @@ public class SLNodeParser extends SLBaseParser {
                     List<SLExpressionNode> accessors = new ArrayList<>();
                     for (var nl : funcToNonLocals.get(name.toString())) {
                         if (nl.fNameWhereFound.equals(currentFunction)) {
-                            accessors.add(SLReadLocalVariableNodeGen.create(nl.vId));
+                            var id = nl.vId;
+                            if (funcToNonLocals.containsKey(currentFunction) && !funcToNonLocals.get(currentFunction).isEmpty()) {
+                                id += 1;
+                            }
+                            accessors.add(SLReadLocalVariableNodeGen.create(id));
                         } else {
 //                            System.out.println(currentFunction); ////
 //                            System.out.println(nl.fNameWhereFound);
