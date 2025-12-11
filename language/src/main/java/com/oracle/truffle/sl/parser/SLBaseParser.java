@@ -379,7 +379,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         for (var f: ctx.def()) {
             var fn = f.function();
             if (fn != null) {
-                System.out.println(fn.IDENTIFIER(0).getSymbol().getText()); ////
+                // System.out.println(fn.IDENTIFIER(0).getSymbol().getText()); ////
                 fScope.declareFunction(fn.IDENTIFIER(0).getSymbol().getText(), fn.s.getStartIndex());
             }
         }
