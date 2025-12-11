@@ -1328,7 +1328,8 @@ public class SLNodeParser extends SLBaseParser {
                 changed = false;
                 for (var fToWait : mFuncToWait2mFuncToAdd.keySet()) {
                     for (var fToAdd : mFuncToWait2mFuncToAdd.get(fToWait)) {
-                        // System.out.println(fToWait); //
+                        //System.out.println(fToWait); ////
+                        //System.out.println(fToAdd); ////
                         for (var nl : mFuncToNonLocals.get(fToWait)) {
                             var funcWhereWasFound = nl.fMNameWhereFound;
                             var varId = nl.vId;
@@ -1507,6 +1508,9 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public Void visitMemberCall(SimpleLanguageParser.MemberCallContext ctx) {
+            if (calledMFName == null) {
+                return null;
+            }
             if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
                 // System.out.println("MCall: " + calledFName); //
                 var nonLocals = mFuncToNonLocals.get(calledMFName);
@@ -1521,9 +1525,9 @@ public class SLNodeParser extends SLBaseParser {
                     }
                 }
             } else {
-//                if (currentFunction.equals("main")) {
-//                    return null; // builtin
-//                }
+                if (!calledMFName.startsWith("L")) {
+                    return null; // builtin
+                }
                 if (!mFuncToWait2mFuncToAdd.containsKey(calledMFName)) {
                     mFuncToWait2mFuncToAdd.put(calledMFName, new ArrayList<>());
                 }

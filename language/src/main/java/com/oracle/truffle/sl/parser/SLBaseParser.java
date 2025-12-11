@@ -380,12 +380,12 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
                 fScope.declareFunction(fn.IDENTIFIER(0).getSymbol().getText(), fn.s.getStartIndex());
             }
         }
-        System.out.println("enterb"); ////
+        //System.out.println("enterb"); ////
     }
 
     protected void exitScope() {
         fScope = fScope.parent;
-        System.out.println("exitb"); ////
+        //System.out.println("exitb"); ////
     }
 
     protected final List<TruffleString> enterBlock(BlockContext ctx) {
