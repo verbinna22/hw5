@@ -91,9 +91,13 @@ public final class SLInvokeNode extends SLExpressionNode {
         int shift = 0;
         Object[] argumentValues;
         if (function instanceof SLFunctionWithClosure fwc) {
-            argumentValues = new Object[argumentNodes.length + 1];
-            shift = 1;
-            argumentValues[0] = fwc.closure;
+            if (fwc.closure != null) {
+                argumentValues = new Object[argumentNodes.length + 1];
+                shift = 1;
+                argumentValues[0] = fwc.closure;
+            } else {
+                argumentValues = new Object[argumentNodes.length];
+            }
             function = fwc.function;
         } else {
             argumentValues = new Object[argumentNodes.length];

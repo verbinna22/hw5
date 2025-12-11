@@ -18,7 +18,7 @@ public class SLFunctionWithClosureExpression extends SLExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         var func = function.executeGeneric(frame);
-        var clos = (SLClosure)closure.executeGeneric(frame);
+        var clos = (closure == null) ? null : (SLClosure)closure.executeGeneric(frame);
         return new SLFunctionWithClosure(clos, func);
     }
 }
