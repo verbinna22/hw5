@@ -6,7 +6,7 @@
  --engine.TraceCompilationDetails
  *)
 
-func doIt(a) {
+fun doIt(a) {
   var hello;
   write("Initial stack trace:");
   write(stacktrace());
@@ -22,46 +22,46 @@ func doIt(a) {
 --  readln()@
 }
 
-func one() {
+fun one() {
   1
 }
 
-func changeGlobal() {
+fun changeGlobal() {
     i := i + 12345;
     write(i)
 }
 
-func testLam() {
-   func two() {
+fun testLam() {
+   fun two() {
       2
    }
    write(two())
 }
 
-func testLam2() {
-   (((func two2() {
+fun testLam2() {
+   (((fun two2() {
       2
    }
    write(two2()))))
 }
 
-func testLam3() {
+fun testLam3() {
     var a = 10;
-    func getA() {
+    fun getA() {
         a
     }
     write(getA())
 }
 
-func testLam4() {
-    func printA(a) {
+fun testLam4() {
+    fun printA(a) {
         write(a)
     }
     printA(123456)
 }
 
-func testLam5() {
-    func tstInt1() { --///
+fun testLam5() {
+    fun tstInt1() { --///
         write("OK")
     }
     var xxxx;
@@ -69,29 +69,29 @@ func testLam5() {
     xxxx()
 }
 
-func testLam6() {
+fun testLam6() {
     var yyyy;
-    yyyy := func () {
+    yyyy := fun () {
         write("OK")
     };
     yyyy()
 }
 
-func testLam7() {
-    func tst() {
+fun testLam7() {
+    fun tst() {
         write(stacktrace())
     }
     tst()
 }
 
-func fX() {
-    func fX() {
+fun fX() {
+    fun fX() {
         1
     }
     write(fX())
 }
 
-func testLam8() {
+fun testLam8() {
     var testLam7 = 0;
     write(testLam7)
 }

@@ -63,7 +63,7 @@ public class SimpleLanguageParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'func'", "'('", "','", "')'", "'{'", "'}'", "'='", "'var'", "'while'", 
+			null, "'fun'", "'('", "','", "')'", "'{'", "'}'", "'='", "'var'", "'while'", 
 			"'do'", "'od'", "'for'", "'elif'", "'then'", "'if'", "'else'", "'fi'", 
 			"'skip'", "'['", "']'", "'_'", "'@'", "'true'", "'false'", "'#box'", 
 			"'#val'", "'#str'", "'#array'", "'#sexp'", "'#fun'", "':'", "'->'", "'|'", 

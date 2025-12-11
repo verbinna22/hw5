@@ -66,7 +66,7 @@ simplelanguage
 
 
 function
-	: 'func' IDENTIFIER
+	: 'fun' IDENTIFIER
 		s='(' (IDENTIFIER (',' IDENTIFIER)*)? ')'
 		'{' body=block '}'
 	;
@@ -270,7 +270,7 @@ case_expression
     ;
 
 lambda_expression
-    : b='func' s='(' (IDENTIFIER (',' IDENTIFIER)*)? ')'
+    : b='fun' s='(' (IDENTIFIER (',' IDENTIFIER)*)? ')'
              		'{' body=block '}'
     ;
 
