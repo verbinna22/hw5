@@ -1263,6 +1263,104 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public Void visitFor_expression(SimpleLanguageParser.For_expressionContext ctx) {
+            var fName = currentFunction;
+            enterBlock(ctx.init);
+            var scope = curScope;
+            exitBlock();
+            exitFunction();
+            functionScopes.add(scope);
+            functionNames.add(fName);
+            for (var def : ctx.init.def()) {
+                if (def.function() != null) {
+                    visitFunction(def.function());
+                }
+            }
+            curScope = functionScopes.removeLast();
+            functionNames.removeLast();
+            currentFunction = fName;
+            if (ctx.init.expression() != null) {
+                visitExpression(ctx.init.expression());
+            }
+            visitExpression(ctx.condition);
+            visitBlock(ctx.body);
+            visitExpression(ctx.last);
+            exitBlock();
+            return null;
+        }
+
+        @Override
+        public Void visitDo_while_expression(SimpleLanguageParser.Do_while_expressionContext ctx) {
+            var fName = currentFunction;
+            enterBlock(ctx.body);
+            var scope = curScope;
+            exitBlock();
+            exitFunction();
+            functionScopes.add(scope);
+            functionNames.add(fName);
+            for (var def : ctx.body.def()) {
+                if (def.function() != null) {
+                    visitFunction(def.function());
+                }
+            }
+            curScope = functionScopes.removeLast();
+            functionNames.removeLast();
+            currentFunction = fName;
+            if (ctx.body.expression() != null) {
+                visitExpression(ctx.body.expression());
+            }
+            visitExpression(ctx.condition);
+            exitBlock();
+            return null;
+        }
+
+        @Override
+        public Void visitCase_expression(SimpleLanguageParser.Case_expressionContext ctx) {
+            visitExpression(ctx.expression());
+            for (var branch : ctx.case_branches().case_branch()) {
+                visitCase_branch(branch);
+            }
+            return null;
+        }
+
+        private ArrayList<Token> toks = new ArrayList<>();
+
+        @Override
+        public Void visitCase_branch(SimpleLanguageParser.Case_branchContext ctx) {
+            toks.clear();
+            visitPattern(ctx.pattern());
+
+            var fName = currentFunction;
+            enterBlock(ctx.block());
+            declareVariables(toks);
+            var scope = curScope;
+            exitBlock();
+            exitFunction();
+            functionScopes.add(scope);
+            functionNames.add(fName);
+            for (var def : ctx.block().def()) {
+                if (def.function() != null) {
+                    visitFunction(def.function());
+                }
+            }
+            curScope = functionScopes.removeLast();
+            functionNames.removeLast();
+            currentFunction = fName;
+            if (ctx.block().expression() != null) {
+                visitChildren(ctx.block().expression());
+            }
+            exitBlock();
+            return null;
+        }
+
+        @Override
+        public Void visitNamedPattern(SimpleLanguageParser.NamedPatternContext ctx) {
+            toks.add(ctx.IDENTIFIER().getSymbol());
+            visitChildren(ctx);
+            return null;
+        }
+
+        @Override
         public Void visitNameAccess(SimpleLanguageParser.NameAccessContext ctx) {
             var tok = ctx.IDENTIFIER().getSymbol();
             var tokName = tok.getText();
