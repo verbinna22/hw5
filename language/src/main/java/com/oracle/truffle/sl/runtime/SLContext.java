@@ -50,6 +50,7 @@ import java.util.List;
 
 import com.oracle.truffle.api.staticobject.StaticProperty;
 import com.oracle.truffle.api.staticobject.StaticShape;
+import com.oracle.truffle.sl.builtins.*;
 import org.graalvm.polyglot.Context;
 
 import com.oracle.truffle.api.CallTarget;
@@ -71,30 +72,6 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.SLLanguage;
-import com.oracle.truffle.sl.builtins.SLAddToHostClassPathBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLBuiltinNode;
-import com.oracle.truffle.sl.builtins.SLDefineFunctionBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLEvalBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLExitBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLGetSizeBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLHasSizeBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLHelloEqualsWorldBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLImportBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLInNativeImageBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLIsExecutableBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLIsInstanceBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLIsNullBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLJavaTypeBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLNanoTimeBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLNewObjectBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLPrintlnBuiltin;
-import com.oracle.truffle.sl.builtins.SLPrintlnBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLReadlnBuiltin;
-import com.oracle.truffle.sl.builtins.SLReadlnBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLRegisterShutdownHookBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLStackTraceBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLTypeOfBuiltinFactory;
-import com.oracle.truffle.sl.builtins.SLWrapPrimitiveBuiltinFactory;
 
 /**
  * The run-time state of SL during execution. The context is created by the {@link SLLanguage}. It
@@ -195,6 +172,7 @@ public final class SLContext {
      */
     private void installBuiltins() {
         installBuiltin(SLReadlnBuiltinFactory.getInstance());
+        installBuiltin(SLLengthBuiltinFactory.getInstance());
         installBuiltin(SLPrintlnBuiltinFactory.getInstance());
         installBuiltin(SLNanoTimeBuiltinFactory.getInstance());
         installBuiltin(SLDefineFunctionBuiltinFactory.getInstance());
