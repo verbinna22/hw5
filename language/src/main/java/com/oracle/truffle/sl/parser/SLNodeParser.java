@@ -1367,14 +1367,16 @@ public class SLNodeParser extends SLBaseParser {
                 changed = false;
                 for (var fToWait : mFuncToWait2mFuncToAdd.keySet()) {
                     for (var fToAdd : mFuncToWait2mFuncToAdd.get(fToWait)) {
-                        //System.out.println(fToWait); ////
-                        //System.out.println(fToAdd); ////
-                        for (var nl : mFuncToNonLocals.get(fToWait)) {
-                            var funcWhereWasFound = nl.fMNameWhereFound;
-                            var varId = nl.vId;
-                            if (!containsTheSame(fToAdd, funcWhereWasFound, varId)) {
-                                // addNonLocal(fToAdd, varId, funcWhereWasFound); TODO
-                                changed = true;
+//                        System.out.println(fToWait); ////
+//                        System.out.println(fToAdd); ////
+                        if (mFuncToNonLocals.containsKey(fToWait)) {
+                            for (var nl : mFuncToNonLocals.get(fToWait)) {
+                                var funcWhereWasFound = nl.fMNameWhereFound;
+                                var varId = nl.vId;
+                                if (!containsTheSame(fToAdd, funcWhereWasFound, varId)) {
+                                    // addNonLocal(fToAdd, varId, funcWhereWasFound); TODO
+                                    changed = true;
+                                }
                             }
                         }
                     }
