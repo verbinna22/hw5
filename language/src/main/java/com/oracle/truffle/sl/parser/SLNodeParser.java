@@ -294,8 +294,9 @@ public class SLNodeParser extends SLBaseParser {
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
         functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
 
-        final SLRootNode rootNode = new SLAstRootNode(language, frameDescriptorBuilder.build(), functionBodyNode, functionSrc, functionName);
-        functions.put(functionName, rootNode.getCallTarget());
+        var functionMName = TruffleString.fromConstant(currentMFunction, TruffleString.Encoding.UTF_8);
+        final SLRootNode rootNode = new SLAstRootNode(language, frameDescriptorBuilder.build(), functionBodyNode, functionSrc, functionMName);
+        functions.put(functionMName, rootNode.getCallTarget());
 
         frameDescriptorBuilder = null;
 
@@ -387,6 +388,7 @@ public class SLNodeParser extends SLBaseParser {
 
         public SLExpressionNode visitMainBlock(BlockContext ctx) {
             List<Token> variables = new ArrayList<>();
+            addFunctionsInScope(ctx);
             for (var definition : ctx.def()) {
                 var variableContext = definition.varSingleLineDef();
                 if (variableContext != null) {
@@ -440,6 +442,7 @@ public class SLNodeParser extends SLBaseParser {
                 }
             }
 
+            exitScope();
             List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
             flattenBlocks(bodyNodes, flattenedNodes);
             int n = flattenedNodes.size();
@@ -1124,8 +1127,9 @@ public class SLNodeParser extends SLBaseParser {
                 var mName = accessibleWith(name.toString());
                 if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
                     List<SLExpressionNode> accessors = new ArrayList<>();
-                    for (var nl : mFuncToNonLocals.get(name.toString())) {
-                        if (nl.fMNameWhereFound.equals(currentFunction)) {
+//                    System.out.println(name + "<<<" + mName);///
+                    for (var nl : mFuncToNonLocals.get(mName)) {
+                        if (nl.fMNameWhereFound.equals(currentMFunction)) {
                             var id = nl.vId;
                             if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
                                 id += 1;
@@ -1135,8 +1139,10 @@ public class SLNodeParser extends SLBaseParser {
 //                            System.out.println(currentFunction); ////
 //                            System.out.println(nl.fNameWhereFound);
 //                            System.out.println(nl.vId);
-//                            funcToFoundFuncToVarIdToInd.get(currentFunction);
-//                            funcToFoundFuncToVarIdToInd.get(currentFunction).get(nl.fNameWhereFound); ////
+//                            System.out.println(currentFunction); ////
+//                            System.out.println(nl.fMNameWhereFound);
+                            mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
+                            mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
                             int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
                             accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
                         }
@@ -1545,7 +1551,7 @@ public class SLNodeParser extends SLBaseParser {
             var mName = accessibleWith(name.toString());
             if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
                 List<SLExpressionNode> accessors = new ArrayList<>();
-                for (var nl : mFuncToNonLocals.get(name.toString())) {
+                for (var nl : mFuncToNonLocals.get(mName)) {
                     if (nl.fMNameWhereFound.equals(currentFunction)) {
                         var id = nl.vId;
                         if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
@@ -1565,7 +1571,7 @@ public class SLNodeParser extends SLBaseParser {
                 closureNode = new SLClosureLiteralNode(accessors.toArray(SLExpressionNode[]::new));
             }
             final SLExpressionNode func;
-            func = SLFunctionLiteralNodeGen.create(new SLStringLiteralNode(name));
+            func = SLFunctionLiteralNodeGen.create(new SLStringLiteralNode(TruffleString.fromConstant(mName, TruffleString.Encoding.UTF_8)));
             func.setSourceSection(nameTerm.getSourceCharIndex(), nameTerm.getSourceLength());
             func.addExpressionTag();
             return new SLFunctionWithClosureExpression(closureNode, func);
@@ -1578,6 +1584,7 @@ public class SLNodeParser extends SLBaseParser {
                 var id = mFuncToVarNameToInd.get(currentMFunction).get(name.toString());
                 result = SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id));
             } else {
+                //System.out.println(name); ////
                 result = new SLReadGlobalVariableNode(globalToId.get(name));
             }
         }

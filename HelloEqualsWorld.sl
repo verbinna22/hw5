@@ -61,7 +61,7 @@ func testLam4() {
 }
 
 func testLam5() {
-    func tstInt1() {
+    func tstInt1() { --///
         write("OK")
     }
     var xxxx;
