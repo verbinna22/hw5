@@ -16,7 +16,7 @@ public abstract class SLLengthBuiltin extends SLBuiltinNode {
     }
 
     @Specialization
-    protected long doLong(TruffleString string) {
+    protected long doLong(StringBuilder string) {
         return string.toString().length();
     }
 }

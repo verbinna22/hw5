@@ -869,7 +869,10 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public SLExpressionNode visitStringLiteral(StringLiteralContext ctx) {
-            return createString(ctx.STRING_LITERAL().getSymbol(), true);
+            var builder = new StringBuilder(ctx.STRING_LITERAL().getSymbol().getText());
+            builder.deleteCharAt(0);
+            builder.deleteCharAt(builder.length() - 1);
+            return new SLNaturalStringNode(builder);
         }
 
         @Override
@@ -1259,6 +1262,7 @@ public class SLNodeParser extends SLBaseParser {
 
     List<TruffleString> builtins = Arrays.asList(
             TruffleString.fromConstant("write", TruffleString.Encoding.UTF_8),
+            TruffleString.fromConstant("length", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("read", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("stacktrace", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("helloEqualsWorld", TruffleString.Encoding.UTF_8)

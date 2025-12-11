@@ -106,7 +106,7 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
         return result;
     }
 
-    @Specialization(guards = {"!isSLObject(receiver)", "!isSLArray(receiver)", "!isSLSexp(receiver)", "!isSLClosure(receiver)", "objects.hasMembers(receiver)"}, limit = "LIBRARY_LIMIT")
+    @Specialization(guards = {"!isSLString(receiver)","!isSLObject(receiver)", "!isSLArray(receiver)", "!isSLSexp(receiver)", "!isSLClosure(receiver)", "objects.hasMembers(receiver)"}, limit = "LIBRARY_LIMIT")
     public static Object readObject(Object receiver, Object name,
                     @Bind Node node,
                     @CachedLibrary("receiver") InteropLibrary objects,
@@ -161,6 +161,20 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
         return result;
     }
 
+    @Specialization(limit = "LIBRARY_LIMIT")
+    public static Object readSLString(StringBuilder receiver, Object index,
+                                       @Bind Node node,
+                                       @CachedLibrary("index") InteropLibrary numbers) {
+
+        Object result = null;
+        try {
+            result = (long)receiver.charAt((int)numbers.asLong(index));
+        } catch (UnsupportedMessageException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
     public static boolean isSLObject(Object receiver) {
         return receiver instanceof SLObject;
     }
@@ -172,5 +186,8 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
     }
     public static boolean isSLClosure(Object receiver) {
         return receiver instanceof SLClosure;
+    }
+    public static boolean isSLString(Object receiver) {
+        return receiver instanceof StringBuilder;
     }
 }
