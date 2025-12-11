@@ -14,6 +14,11 @@ public final class SLSeqNode extends SLExpressionNode {
     }
 
     @Override
+    public void setIsTail() {
+        right.setIsTail();
+    }
+
+    @Override
     public void executeVoid(VirtualFrame frame) {
         left.executeVoid(frame);
         right.executeVoid(frame);

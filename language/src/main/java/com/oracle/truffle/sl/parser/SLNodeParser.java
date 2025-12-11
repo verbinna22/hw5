@@ -164,6 +164,7 @@ public class SLNodeParser extends SLBaseParser {
         final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
+        methodBlock.setIsTail();
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
         functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
 
@@ -223,6 +224,7 @@ public class SLNodeParser extends SLBaseParser {
         final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
+        methodBlock.setIsTail();
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
         functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
 
@@ -286,6 +288,7 @@ public class SLNodeParser extends SLBaseParser {
         final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
+        methodBlock.setIsTail();
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
         functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
 

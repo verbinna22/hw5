@@ -30,6 +30,12 @@ public final class SLIfExpression extends SLExpressionNode {
      */
     private final CountingConditionProfile condition = CountingConditionProfile.create();
 
+    @Override
+    public void setIsTail() {
+        thenPartNode.setIsTail();
+        elsePartNode.setIsTail();
+    }
+
     public SLIfExpression(SLExpressionNode conditionNode, SLExpressionNode thenPartNode, SLExpressionNode elsePartNode) {
         this.conditionNode = SLUnboxNodeGen.create(conditionNode);
         this.conditionNode.setSourceSection(conditionNode.getSourceCharIndex(), conditionNode.getSourceLength());

@@ -61,6 +61,11 @@ public class SLParenExpressionNode extends SLExpressionNode {
     }
 
     @Override
+    public void setIsTail() {
+        expression.setIsTail();
+    }
+
+    @Override
     public Object executeGeneric(VirtualFrame frame) {
         return expression.executeGeneric(frame);
     }

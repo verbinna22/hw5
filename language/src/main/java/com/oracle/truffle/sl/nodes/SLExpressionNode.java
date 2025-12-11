@@ -60,6 +60,8 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 public abstract class SLExpressionNode extends SLStatementNode {
 
     private boolean hasExpressionTag;
+    public void setIsTail() {}
+    public boolean isTail() { return false; }
 
     /**
      * The execute method when no specialization is possible. This is the most general case,

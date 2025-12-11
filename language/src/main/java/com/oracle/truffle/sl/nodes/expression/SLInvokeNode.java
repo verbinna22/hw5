@@ -76,6 +76,18 @@ public final class SLInvokeNode extends SLExpressionNode {
         this.library = InteropLibrary.getFactory().createDispatched(3);
     }
 
+    private boolean isTail = false;
+
+    @Override
+    public void setIsTail() {
+        isTail = true;
+    }
+
+    @Override
+    public  boolean isTail() {
+        return isTail;
+    }
+
     @ExplodeLoop
     @Override
     public Object executeGeneric(VirtualFrame frame) {
@@ -106,8 +118,19 @@ public final class SLInvokeNode extends SLExpressionNode {
             argumentValues[i + shift] = argumentNodes[i].executeGeneric(frame);
         }
 
+        CompilerAsserts.compilationConstant(this.isTail());
+        if (this.isTail()) {
+            throw new TailCallException(function, argumentValues);
+        }
         try {
-            return library.execute(function, argumentValues);
+            while (true) {
+                try {
+                    return library.execute(function, argumentValues);
+                } catch (TailCallException e) {
+                    function = e.function;
+                    argumentValues = e.arguments;
+                }
+            }
         } catch (ArityException | UnsupportedTypeException | UnsupportedMessageException e) {
             /* Execute was not successful. */
             throw SLException.undefinedFunction(this, function);

@@ -46,6 +46,13 @@ public class SLBlockExpression  extends SLExpressionNode implements BlockNode.El
         this.block = bodyNodes.length > 0 ? BlockNode.create(bodyNodes, this) : null;
     }
 
+    @Override
+    public void setIsTail() {
+        var elems = this.block.getElements();
+        var node = elems[elems.length - 1];
+        node.setIsTail();
+    }
+
     /**
      * Execute all block statements. The block node makes sure that {@link ExplodeLoop full
      * unrolling} of the loop is triggered during compilation. This allows the

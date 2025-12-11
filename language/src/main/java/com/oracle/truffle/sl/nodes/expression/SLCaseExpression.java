@@ -20,6 +20,13 @@ public final class SLCaseExpression extends SLExpressionNode {
     }
 
     @Override
+    public void setIsTail() {
+        for (var branch : branchNodes) {
+            branch.setIsTail();
+        }
+    }
+
+    @Override
     public Object executeGeneric(VirtualFrame frame) {
         Object value = expr.executeGeneric(frame);
         for (int i = 0; i < branchNodes.length; ++i) {
