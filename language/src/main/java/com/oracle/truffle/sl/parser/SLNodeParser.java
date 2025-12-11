@@ -164,7 +164,7 @@ public class SLNodeParser extends SLBaseParser {
         final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
-        methodBlock.setIsTail();
+        // methodBlock.setIsTail();
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
         functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
 
@@ -1241,6 +1241,7 @@ public class SLNodeParser extends SLBaseParser {
 
     List<TruffleString> builtins = Arrays.asList(
             TruffleString.fromConstant("write", TruffleString.Encoding.UTF_8),
+            TruffleString.fromConstant("read", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("stacktrace", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("helloEqualsWorld", TruffleString.Encoding.UTF_8)
     );
