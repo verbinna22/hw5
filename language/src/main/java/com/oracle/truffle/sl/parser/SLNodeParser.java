@@ -1093,6 +1093,22 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitTrueLiteral(SimpleLanguageParser.TrueLiteralContext ctx) {
+            SLExpressionNode result;
+            result = new SLLongLiteralNode(1);
+            result.addExpressionTag();
+            return result;
+        }
+
+        @Override
+        public SLExpressionNode visitFalseLiteral(SimpleLanguageParser.FalseLiteralContext ctx) {
+            SLExpressionNode result;
+            result = new SLLongLiteralNode(0);
+            result.addExpressionTag();
+            return result;
+        }
+
+        @Override
         public SLExpressionNode visitParenExpression(ParenExpressionContext ctx) {
             SLExpressionNode expressionNode = visitBlock(ctx.block());
 

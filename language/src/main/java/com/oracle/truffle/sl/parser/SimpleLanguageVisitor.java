@@ -403,6 +403,13 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLambdaExpr(SimpleLanguageParser.LambdaExprContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code FalseLiteral}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFalseLiteral(SimpleLanguageParser.FalseLiteralContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code IndirectCall}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
@@ -423,6 +430,13 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStringLiteral(SimpleLanguageParser.StringLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code TrueLiteral}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTrueLiteral(SimpleLanguageParser.TrueLiteralContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code SexpExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.

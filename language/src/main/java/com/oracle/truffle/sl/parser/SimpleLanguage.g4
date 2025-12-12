@@ -317,6 +317,8 @@ factor
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral
 	| CHAR_LITERAL                  # CharLiteral
+	| 'true'                        # TrueLiteral
+	| 'false'                       # FalseLiteral
 	| '(' block ')'			# ParenExpression
 	;
 
