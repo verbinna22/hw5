@@ -180,6 +180,10 @@ namedPattern
     : IDENTIFIER '@' pattern
     ;
 
+namedVarPattern
+    : IDENTIFIER
+    ;
+
 decimalPattern
     : NUMERIC_LITERAL
     ;
@@ -234,6 +238,7 @@ simplePattern
     | arrayPattern
     | listPattern
     | namedPattern
+    | namedVarPattern
     | decimalPattern
     | stringPattern
     | charPattern

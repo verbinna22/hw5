@@ -207,6 +207,13 @@ public class SimpleLanguageBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitNamedVarPattern(SimpleLanguageParser.NamedVarPatternContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitDecimalPattern(SimpleLanguageParser.DecimalPatternContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

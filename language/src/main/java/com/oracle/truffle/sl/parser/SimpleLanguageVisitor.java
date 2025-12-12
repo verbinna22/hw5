@@ -173,6 +173,12 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNamedPattern(SimpleLanguageParser.NamedPatternContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLanguageParser#namedVarPattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNamedVarPattern(SimpleLanguageParser.NamedVarPatternContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLanguageParser#decimalPattern}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

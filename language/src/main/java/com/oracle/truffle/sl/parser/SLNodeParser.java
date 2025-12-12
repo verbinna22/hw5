@@ -1018,6 +1018,19 @@ public class SLNodeParser extends SLBaseParser {
             }
 
             @Override
+            public SLPatternNode visitNamedVarPattern(SimpleLanguageParser.NamedVarPatternContext ctx) {
+                var result = new WildCardPattern();
+                var tok = ctx.IDENTIFIER().getSymbol();
+                if (ts.contains(tok)) {
+                    throw new RuntimeException("Token redefinition");
+                }
+                tokens.add(tok);
+                ts.add(tok);
+                nodes.add(baseExpression);
+                return result;
+            }
+
+            @Override
             public SLPatternNode visitDecimalPattern(SimpleLanguageParser.DecimalPatternContext ctx) {
                 return new DecimalPattern(Long.parseLong(ctx.NUMERIC_LITERAL().getSymbol().getText()));
             }
