@@ -287,41 +287,6 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code IfExpr}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code LambdaExpr}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitLambdaExpr(SimpleLanguageParser.LambdaExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code CaseExpr}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCaseExpr(SimpleLanguageParser.CaseExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code ArrayExpr}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArrayExpr(SimpleLanguageParser.ArrayExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code SexpExpr}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSexpExpr(SimpleLanguageParser.SexpExprContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code SkipExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
@@ -336,33 +301,19 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhileExpr(SimpleLanguageParser.WhileExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code ForExpr}
+	 * Visit a parse tree produced by the {@code PointAccessExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitForExpr(SimpleLanguageParser.ForExprContext ctx);
+	T visitPointAccessExpr(SimpleLanguageParser.PointAccessExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code DoWhileExpr}
+	 * Visit a parse tree produced by the {@code IfExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDoWhileExpr(SimpleLanguageParser.DoWhileExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code NameAccess}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNameAccess(SimpleLanguageParser.NameAccessContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code StringLiteral}
-	 * labeled alternative in {@link SimpleLanguageParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStringLiteral(SimpleLanguageParser.StringLiteralContext ctx);
+	T visitIfExpr(SimpleLanguageParser.IfExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code NumericLiteral}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
@@ -371,12 +322,68 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNumericLiteral(SimpleLanguageParser.NumericLiteralContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code DoWhileExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDoWhileExpr(SimpleLanguageParser.DoWhileExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code LambdaExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLambdaExpr(SimpleLanguageParser.LambdaExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ArrayExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayExpr(SimpleLanguageParser.ArrayExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code StringLiteral}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStringLiteral(SimpleLanguageParser.StringLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code SexpExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSexpExpr(SimpleLanguageParser.SexpExprContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code ParenExpression}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParenExpression(SimpleLanguageParser.ParenExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ForExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForExpr(SimpleLanguageParser.ForExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code CaseExpr}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCaseExpr(SimpleLanguageParser.CaseExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code NameAccess}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNameAccess(SimpleLanguageParser.NameAccessContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code MemberCall}
 	 * labeled alternative in {@link SimpleLanguageParser#member_expression}.

@@ -868,6 +868,48 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitPointAccessExpr(SimpleLanguageParser.PointAccessExprContext ctx) {
+            List<SLExpressionNode> parameters = new ArrayList<>();
+            var assignmentName = createString(ctx.IDENTIFIER().getSymbol(), false);
+            final TruffleString name = ((SLStringLiteralNode) assignmentName).executeGeneric(null);
+            var receiver = createCallRead(assignmentName);
+            var mName = accessibleWith(name.toString());
+            if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
+                List<SLExpressionNode> accessors = new ArrayList<>();
+//                    System.out.println(name + "<<<" + mName);///
+                for (var nl : mFuncToNonLocals.get(mName)) {
+                    if (nl.fMNameWhereFound.equals(currentMFunction)) {
+                        var id = nl.vId;
+                        if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
+                            id += 1;
+                        }
+                        accessors.add(SLReadLocalVariableNodeGen.create(id));
+                    } else {
+//                            System.out.println(currentFunction); ////
+//                            System.out.println(nl.fNameWhereFound);
+//                            System.out.println(nl.vId);
+//                            System.out.println(currentFunction); ////
+//                            System.out.println(nl.fMNameWhereFound);
+                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
+                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
+                        int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
+                        accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
+                    }
+                }
+                var closureNode = new SLClosureLiteralNode(accessors.toArray(SLExpressionNode[]::new));
+                parameters.add(closureNode);
+            }
+            parameters.add(expressionVisitor.visit(ctx.factor()));
+            final SLExpressionNode result = new SLInvokeNode(receiver, parameters.toArray(new SLExpressionNode[parameters.size()]));
+
+            final int startPos = receiver.getSourceCharIndex();
+            final int endPos = ctx.stop.getStopIndex() + 1;
+            result.setSourceSection(startPos, endPos - startPos);
+            result.addExpressionTag();
+            return result;
+        }
+
+        @Override
         public SLExpressionNode visitStringLiteral(StringLiteralContext ctx) {
             var builder = new StringBuilder(ctx.STRING_LITERAL().getSymbol().getText());
             builder.deleteCharAt(0);

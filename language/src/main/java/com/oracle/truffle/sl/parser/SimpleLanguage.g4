@@ -284,6 +284,7 @@ factor
     | while_expression              # WhileExpr
     | for_expression                # ForExpr
     | do_while_expression           # DoWhileExpr
+    | factor '.' IDENTIFIER         # PointAccessExpr
 	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral
