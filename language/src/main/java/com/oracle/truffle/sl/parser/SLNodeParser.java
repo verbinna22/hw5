@@ -525,22 +525,16 @@ public class SLNodeParser extends SLBaseParser {
             List<SLExpressionNode> bodyNodes = new ArrayList<>();
             // ---
             loopDepth++;
-            SLStatementNode bodyExprNode = (ctx.body.expression() == null) ? new SLSkipExpression() : expressionVisitor.visitExpression(ctx.body.expression());
+            SLExpressionNode bodyExprNode = (ctx.body.expression() == null) ? new SLSkipExpression() : expressionVisitor.visitExpression(ctx.body.expression());
             loopDepth--;
             SLExpressionNode conditionNode = expressionVisitor.visitExpression(ctx.condition);
 
             conditionNode.addStatementTag();
             final int start = ctx.d.getStartIndex();
             final int end = bodyExprNode.getSourceEndIndex();
-            final SLDoWhileExpression doWhileNode = new SLDoWhileExpression(conditionNode, bodyExprNode);
-            if (end - start > 0) {
-                doWhileNode.setSourceSection(start, end - start);
-            } else {
-                doWhileNode.setSourceSection(start, 0);
-            }
+
             // ---
 
-            bodyNodes.add(doWhileNode);
 
             for (var definition : ctx.body.def().reversed()) {
                 var variableDefinition = definition.varSingleLineDef();
@@ -550,11 +544,18 @@ public class SLNodeParser extends SLBaseParser {
                             var varToken = variable.IDENTIFIER().getSymbol();
                             var valueNode = expressionVisitor.visitList_term(variable.list_term());
                             var result = createAssignment(createString(varToken, false), valueNode, null);
-                            bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
+                            bodyExprNode = new SLSeqNode(result, bodyExprNode);
                         }
                     }
                 }
             }
+            final SLDoWhileExpression doWhileNode = new SLDoWhileExpression(conditionNode, bodyExprNode);
+            if (end - start > 0) {
+                doWhileNode.setSourceSection(start, end - start);
+            } else {
+                doWhileNode.setSourceSection(start, 0);
+            }
+            bodyNodes.add(doWhileNode);
 
             exitBlock();
             exitScope();
