@@ -69,10 +69,6 @@ import com.oracle.truffle.sl.parser.SimpleLanguageParser.ExpressionContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.FunctionContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Logic_factorContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.Logic_termContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberAssignContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberCallContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberIndexContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.Member_expressionContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.NameAccessContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.NumericLiteralContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.ParenExpressionContext;
@@ -736,7 +732,7 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public SLExpressionNode visitExpression(ExpressionContext ctx) {
-            return createBinary(ctx.or_term(), ctx.OP_SEQ());
+            return createBinary(ctx.assign_term(), ctx.OP_SEQ());
         }
 
         @Override
@@ -852,19 +848,130 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public SLExpressionNode visitNameAccess(NameAccessContext ctx) {
+            return createRead(createString(ctx.IDENTIFIER().getSymbol(), false));
+//            if (ctx.member_expression().isEmpty()) {
+//
+//            }
 
-            if (ctx.member_expression().isEmpty()) {
-                return createRead(createString(ctx.IDENTIFIER().getSymbol(), false));
+//            MemberExpressionVisitor visitor = new MemberExpressionVisitor(null, null,
+//                            createString(ctx.IDENTIFIER().getSymbol(), false));
+
+//            for (Member_expressionContext child : ctx.member_expression()) {
+//                visitor.visit(child);
+//            }
+//
+//            return visitor.receiver;
+        }
+
+        @Override
+        public SLExpressionNode visitIndAccess(SimpleLanguageParser.IndAccessContext ctx) {
+            var receiver = visit(ctx.factor());
+            SLExpressionNode nameNode = expressionVisitor.visitExpression(ctx.expression());
+
+            final SLExpressionNode result = SLReadPropertyNodeGen.create(receiver, nameNode);
+
+            final int startPos = receiver.getSourceCharIndex();
+            final int endPos = nameNode.getSourceEndIndex();
+            result.setSourceSection(startPos, endPos - startPos);
+            result.addExpressionTag();
+
+            return result;
+        }
+
+        @Override
+        public SLExpressionNode visitAssignment(SimpleLanguageParser.AssignmentContext ctx) {
+            final SLExpressionNode result;
+//            if (assignmentName == null) {
+//                semErr(ctx.or_term().start, "invalid assignment target");
+//                result = null;
+//            } else
+            if (ctx.ref() instanceof SimpleLanguageParser.DirRefContext refCtx) {
+                var assignmentName = createString(refCtx.IDENTIFIER().getSymbol(), false);
+                SLExpressionNode valueNode = expressionVisitor.visit(ctx.assign_term());
+                result = createAssignment((SLStringLiteralNode) assignmentName, valueNode, null);
+            } else {
+                var elemRefCtx = (SimpleLanguageParser.ElemRefContext)ctx.ref();
+                // create write property
+                SLExpressionNode valueNode = expressionVisitor.visit(ctx.assign_term());
+                var indexNode = visit(elemRefCtx.expression());
+                var receiver = visit(elemRefCtx.factor());
+
+                result = SLWritePropertyNodeGen.create(receiver, indexNode, valueNode);
+
+                final int start = receiver.getSourceCharIndex();
+                final int length = valueNode.getSourceEndIndex() - start + 1;
+                if (length >= 0 && start >= 0) {
+                    result.setSourceSection(start, length);
+                } else {
+                    result.setSourceSection(0, 0);
+                }
+                result.addExpressionTag();
+            }
+            return result;
+        }
+
+        @Override
+        public SLExpressionNode visitDirectCall(SimpleLanguageParser.DirectCallContext ctx) {
+            List<SLExpressionNode> parameters = new ArrayList<>();
+            var assignmentName = createString(ctx.IDENTIFIER().getSymbol(), false);
+            final TruffleString name = asTruffleString(ctx.IDENTIFIER().getSymbol(), false);
+            var receiver = createCallRead(assignmentName);
+            var mName = accessibleWith(name.toString());
+            if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
+                List<SLExpressionNode> accessors = new ArrayList<>();
+//                    System.out.println(name + "<<<" + mName);///
+                for (var nl : mFuncToNonLocals.get(mName)) {
+                    if (nl.fMNameWhereFound.equals(currentMFunction)) {
+                        var id = nl.vId;
+                        if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
+                            id += 1;
+                        }
+                        accessors.add(SLReadLocalVariableNodeGen.create(id));
+                    } else {
+//                            System.out.println(currentFunction); ////
+//                            System.out.println(nl.fNameWhereFound);
+//                            System.out.println(nl.vId);
+//                            System.out.println(currentFunction); ////
+//                            System.out.println(nl.fMNameWhereFound);
+                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
+                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
+                        int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
+                        accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
+                    }
+                }
+                var closureNode = new SLClosureLiteralNode(accessors.toArray(SLExpressionNode[]::new));
+                parameters.add(closureNode);
+            }
+            for (ExpressionContext child : ctx.expression()) {
+                parameters.add(expressionVisitor.visitExpression(child));
             }
 
-            MemberExpressionVisitor visitor = new MemberExpressionVisitor(null, null,
-                            createString(ctx.IDENTIFIER().getSymbol(), false));
+            final SLExpressionNode result = new SLInvokeNode(receiver, parameters.toArray(new SLExpressionNode[parameters.size()]));
 
-            for (Member_expressionContext child : ctx.member_expression()) {
-                visitor.visit(child);
+            final int startPos = receiver.getSourceCharIndex();
+            final int endPos = ctx.stop.getStopIndex() + 1;
+            result.setSourceSection(startPos, endPos - startPos);
+            result.addExpressionTag();
+            return result;
+        }
+
+        @Override
+        public SLExpressionNode visitIndirectCall(SimpleLanguageParser.IndirectCallContext ctx) {
+            List<SLExpressionNode> parameters = new ArrayList<>();
+            var receiver = visit(ctx.factor());
+//            // process Closure
+//
+            for (ExpressionContext child : ctx.expression()) {
+                parameters.add(expressionVisitor.visitExpression(child));
             }
 
-            return visitor.receiver;
+            final SLExpressionNode result = new SLInvokeNode(receiver, parameters.toArray(new SLExpressionNode[parameters.size()]));
+
+            final int startPos = receiver.getSourceCharIndex();
+            final int endPos = ctx.stop.getStopIndex() + 1;
+            result.setSourceSection(startPos, endPos - startPos);
+            result.addExpressionTag();
+            return result;
         }
 
         @Override
@@ -1181,124 +1288,124 @@ public class SLNodeParser extends SLBaseParser {
     private String currentFunction = "@main";
     private String currentMFunction = "@main";
 
-    private class MemberExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
-        SLExpressionNode receiver;
-        private SLExpressionNode assignmentReceiver;
-        private SLExpressionNode assignmentName;
-
-        MemberExpressionVisitor(SLExpressionNode r, SLExpressionNode assignmentReceiver, SLExpressionNode assignmentName) {
-            this.receiver = r;
-            this.assignmentReceiver = assignmentReceiver;
-            this.assignmentName = assignmentName;
-        }
-
-        @Override
-        public SLExpressionNode visitMemberCall(MemberCallContext ctx) {
-            List<SLExpressionNode> parameters = new ArrayList<>();
-            if (receiver == null) {
-                final TruffleString name = ((SLStringLiteralNode) assignmentName).executeGeneric(null);
-                receiver = createCallRead(assignmentName);
-                var mName = accessibleWith(name.toString());
-                if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
-                    List<SLExpressionNode> accessors = new ArrayList<>();
-//                    System.out.println(name + "<<<" + mName);///
-                    for (var nl : mFuncToNonLocals.get(mName)) {
-                        if (nl.fMNameWhereFound.equals(currentMFunction)) {
-                            var id = nl.vId;
-                            if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
-                                id += 1;
-                            }
-                            accessors.add(SLReadLocalVariableNodeGen.create(id));
-                        } else {
-//                            System.out.println(currentFunction); ////
-//                            System.out.println(nl.fNameWhereFound);
-//                            System.out.println(nl.vId);
-//                            System.out.println(currentFunction); ////
-//                            System.out.println(nl.fMNameWhereFound);
-                            mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
-                            mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
-                            int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
-                            accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
-                        }
-                    }
-                    var closureNode = new SLClosureLiteralNode(accessors.toArray(SLExpressionNode[]::new));
-                    parameters.add(closureNode);
-                }
-            }
-            // process Closure
-
-            for (ExpressionContext child : ctx.expression()) {
-                parameters.add(expressionVisitor.visitExpression(child));
-            }
-
-            final SLExpressionNode result = new SLInvokeNode(receiver, parameters.toArray(new SLExpressionNode[parameters.size()]));
-
-            final int startPos = receiver.getSourceCharIndex();
-            final int endPos = ctx.stop.getStopIndex() + 1;
-            result.setSourceSection(startPos, endPos - startPos);
-            result.addExpressionTag();
-
-            assignmentReceiver = receiver;
-            receiver = result;
-            assignmentName = null;
-            return result;
-        }
-
-        @Override
-        public SLExpressionNode visitMemberAssign(MemberAssignContext ctx) {
-            final SLExpressionNode result;
-            if (assignmentName == null) {
-                semErr(ctx.or_term().start, "invalid assignment target");
-                result = null;
-            } else if (assignmentReceiver == null) {
-                SLExpressionNode valueNode = expressionVisitor.visitOr_term(ctx.or_term());
-                result = createAssignment((SLStringLiteralNode) assignmentName, valueNode, null);
-            } else {
-                // create write property
-                SLExpressionNode valueNode = expressionVisitor.visitOr_term(ctx.or_term());
-
-                result = SLWritePropertyNodeGen.create(assignmentReceiver, assignmentName, valueNode);
-
-                final int start = assignmentReceiver.getSourceCharIndex();
-                final int length = valueNode.getSourceEndIndex() - start + 1;
-                if (length >= 0 && start >= 0) {
-                    result.setSourceSection(start, length);
-                } else {
-                    result.setSourceSection(0, 0);
-                }
-                result.addExpressionTag();
-            }
-
-            assignmentReceiver = receiver;
-            receiver = result;
-            assignmentName = null;
-
-            return result;
-        }
-
-        @Override
-        public SLExpressionNode visitMemberIndex(MemberIndexContext ctx) {
-            if (receiver == null) {
-                receiver = createRead(assignmentName);
-            }
-
-            SLExpressionNode nameNode = expressionVisitor.visitExpression(ctx.expression());
-            assignmentName = nameNode;
-
-            final SLExpressionNode result = SLReadPropertyNodeGen.create(receiver, nameNode);
-
-            final int startPos = receiver.getSourceCharIndex();
-            final int endPos = nameNode.getSourceEndIndex();
-            result.setSourceSection(startPos, endPos - startPos);
-            result.addExpressionTag();
-
-            assignmentReceiver = receiver;
-            receiver = result;
-
-            return result;
-        }
-
-    }
+//    private class MemberExpressionVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
+//        SLExpressionNode receiver;
+//        private SLExpressionNode assignmentReceiver;
+//        private SLExpressionNode assignmentName;
+//
+//        MemberExpressionVisitor(SLExpressionNode r, SLExpressionNode assignmentReceiver, SLExpressionNode assignmentName) {
+//            this.receiver = r;
+//            this.assignmentReceiver = assignmentReceiver;
+//            this.assignmentName = assignmentName;
+//        }
+//
+//        @Override
+//        public SLExpressionNode visitMemberCall(MemberCallContext ctx) {
+//            List<SLExpressionNode> parameters = new ArrayList<>();
+//            if (receiver == null) {
+//                final TruffleString name = ((SLStringLiteralNode) assignmentName).executeGeneric(null);
+//                receiver = createCallRead(assignmentName);
+//                var mName = accessibleWith(name.toString());
+//                if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
+//                    List<SLExpressionNode> accessors = new ArrayList<>();
+////                    System.out.println(name + "<<<" + mName);///
+//                    for (var nl : mFuncToNonLocals.get(mName)) {
+//                        if (nl.fMNameWhereFound.equals(currentMFunction)) {
+//                            var id = nl.vId;
+//                            if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
+//                                id += 1;
+//                            }
+//                            accessors.add(SLReadLocalVariableNodeGen.create(id));
+//                        } else {
+////                            System.out.println(currentFunction); ////
+////                            System.out.println(nl.fNameWhereFound);
+////                            System.out.println(nl.vId);
+////                            System.out.println(currentFunction); ////
+////                            System.out.println(nl.fMNameWhereFound);
+//                            mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
+//                            mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
+//                            int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
+//                            accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
+//                        }
+//                    }
+//                    var closureNode = new SLClosureLiteralNode(accessors.toArray(SLExpressionNode[]::new));
+//                    parameters.add(closureNode);
+//                }
+//            }
+//            // process Closure
+//
+//            for (ExpressionContext child : ctx.expression()) {
+//                parameters.add(expressionVisitor.visitExpression(child));
+//            }
+//
+//            final SLExpressionNode result = new SLInvokeNode(receiver, parameters.toArray(new SLExpressionNode[parameters.size()]));
+//
+//            final int startPos = receiver.getSourceCharIndex();
+//            final int endPos = ctx.stop.getStopIndex() + 1;
+//            result.setSourceSection(startPos, endPos - startPos);
+//            result.addExpressionTag();
+//
+//            assignmentReceiver = receiver;
+//            receiver = result;
+//            assignmentName = null;
+//            return result;
+//        }
+//
+//        @Override
+//        public SLExpressionNode visitMemberAssign(MemberAssignContext ctx) {
+//            final SLExpressionNode result;
+//            if (assignmentName == null) {
+//                semErr(ctx.or_term().start, "invalid assignment target");
+//                result = null;
+//            } else if (assignmentReceiver == null) {
+//                SLExpressionNode valueNode = expressionVisitor.visitOr_term(ctx.or_term());
+//                result = createAssignment((SLStringLiteralNode) assignmentName, valueNode, null);
+//            } else {
+//                // create write property
+//                SLExpressionNode valueNode = expressionVisitor.visitOr_term(ctx.or_term());
+//
+//                result = SLWritePropertyNodeGen.create(assignmentReceiver, assignmentName, valueNode);
+//
+//                final int start = assignmentReceiver.getSourceCharIndex();
+//                final int length = valueNode.getSourceEndIndex() - start + 1;
+//                if (length >= 0 && start >= 0) {
+//                    result.setSourceSection(start, length);
+//                } else {
+//                    result.setSourceSection(0, 0);
+//                }
+//                result.addExpressionTag();
+//            }
+//
+//            assignmentReceiver = receiver;
+//            receiver = result;
+//            assignmentName = null;
+//
+//            return result;
+//        }
+//
+//        @Override
+//        public SLExpressionNode visitMemberIndex(MemberIndexContext ctx) {
+//            if (receiver == null) {
+//                receiver = createRead(assignmentName);
+//            }
+//
+//            SLExpressionNode nameNode = expressionVisitor.visitExpression(ctx.expression());
+//            assignmentName = nameNode;
+//
+//            final SLExpressionNode result = SLReadPropertyNodeGen.create(receiver, nameNode);
+//
+//            final int startPos = receiver.getSourceCharIndex();
+//            final int endPos = nameNode.getSourceEndIndex();
+//            result.setSourceSection(startPos, endPos - startPos);
+//            result.addExpressionTag();
+//
+//            assignmentReceiver = receiver;
+//            receiver = result;
+//
+//            return result;
+//        }
+//
+//    }
 
     public boolean isFunction(String name) {
         var curFScope = fScope;
@@ -1595,11 +1702,32 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public Void visitDirRef(SimpleLanguageParser.DirRefContext ctx) {
+            var tok = ctx.IDENTIFIER().getSymbol();
+            var tokName = tok.getText();
+            var tokTrStr = asTruffleString(tok, false);
+            if (getLocalIndex(tok) == -1 && !definedNonLocal(currentMFunction, tokName)) {
+                for (int i = functionScopes.size() - 1; i >= 0; --i) {
+                    var scope = functionScopes.get(i);
+                    if (scope.getLocalIndex(tokTrStr) != -1) {
+//                            System.out.println(tok); ////
+//                            for (var fnm : functionNames) {
+//                                System.out.println(fnm); ////
+//                            } ////
+                        addNonLocal(currentMFunction, scope.getLocalIndex(tokTrStr), functionMNames.get(i), tokName);
+                        break;
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
         public Void visitNameAccess(SimpleLanguageParser.NameAccessContext ctx) {
             var tok = ctx.IDENTIFIER().getSymbol();
             var tokName = tok.getText();
             var tokTrStr = asTruffleString(tok, false);
-            calledMFName = accessibleWith(tokName);
+            // calledMFName = accessibleWith(tokName);
             if (!isFunction(tokName)) {
                 if (getLocalIndex(tok) == -1 && !definedNonLocal(currentMFunction, tokName)) {
                     for (int i = functionScopes.size() - 1; i >= 0; --i) {
@@ -1614,40 +1742,112 @@ public class SLNodeParser extends SLBaseParser {
                         }
                     }
                 }
+            } else {
+                var calledMFName = accessibleWith(tokName);
+                assert calledMFName != null;
+                if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
+                    // System.out.println("MCall: " + calledFName); //
+                    var nonLocals = mFuncToNonLocals.get(calledMFName);
+                    if (nonLocals == null) {
+                        return null; // builtin TODO
+                    }
+                    for (var nl : mFuncToNonLocals.get(calledMFName)) {
+                        var funcWhereWasFound = nl.fMNameWhereFound;
+                        var varId = nl.vId;
+                        if (!containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
+                            addNonLocal(currentMFunction, varId, funcWhereWasFound);
+                        }
+                    }
+                } else {
+                    if (!calledMFName.startsWith("L")) {
+                        return null; // builtin
+                    }
+                    if (!mFuncToWait2mFuncToAdd.containsKey(calledMFName)) {
+                        mFuncToWait2mFuncToAdd.put(calledMFName, new ArrayList<>());
+                    }
+                    mFuncToWait2mFuncToAdd.get(calledMFName).add(currentMFunction);
+                }
             }
-            visitChildren(ctx);
             return null;
         }
 
         @Override
-        public Void visitMemberCall(SimpleLanguageParser.MemberCallContext ctx) {
-            if (calledMFName == null) {
-                return null;
-            }
-            if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
-                // System.out.println("MCall: " + calledFName); //
-                var nonLocals = mFuncToNonLocals.get(calledMFName);
-                if (nonLocals == null) {
-                    return null; // builtin TODO
-                }
-                for (var nl : mFuncToNonLocals.get(calledMFName)) {
-                    var funcWhereWasFound = nl.fMNameWhereFound;
-                    var varId = nl.vId;
-                    if (!containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
-                        addNonLocal(currentMFunction, varId, funcWhereWasFound);
+        public Void visitDirectCall(SimpleLanguageParser.DirectCallContext ctx) {
+            var tok = ctx.IDENTIFIER().getSymbol();
+            var tokName = tok.getText();
+            var tokTrStr = asTruffleString(tok, false);
+            if (!isFunction(tokName)) {
+                if (getLocalIndex(tok) == -1 && !definedNonLocal(currentMFunction, tokName)) {
+                    for (int i = functionScopes.size() - 1; i >= 0; --i) {
+                        var scope = functionScopes.get(i);
+                        if (scope.getLocalIndex(tokTrStr) != -1) {
+//                            System.out.println(tok); ////
+//                            for (var fnm : functionNames) {
+//                                System.out.println(fnm); ////
+//                            } ////
+                            addNonLocal(currentMFunction, scope.getLocalIndex(tokTrStr), functionMNames.get(i), tokName);
+                            break;
+                        }
                     }
                 }
             } else {
-                if (!calledMFName.startsWith("L")) {
-                    return null; // builtin
+                var calledMFName = accessibleWith(tokName);
+                assert calledMFName != null;
+                if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
+                    // System.out.println("MCall: " + calledFName); //
+                    var nonLocals = mFuncToNonLocals.get(calledMFName);
+                    if (nonLocals == null) {
+                        return null; // builtin TODO
+                    }
+                    for (var nl : mFuncToNonLocals.get(calledMFName)) {
+                        var funcWhereWasFound = nl.fMNameWhereFound;
+                        var varId = nl.vId;
+                        if (!containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
+                            addNonLocal(currentMFunction, varId, funcWhereWasFound);
+                        }
+                    }
+                } else {
+                    if (!calledMFName.startsWith("L")) {
+                        return null; // builtin
+                    }
+                    if (!mFuncToWait2mFuncToAdd.containsKey(calledMFName)) {
+                        mFuncToWait2mFuncToAdd.put(calledMFName, new ArrayList<>());
+                    }
+                    mFuncToWait2mFuncToAdd.get(calledMFName).add(currentMFunction);
                 }
-                if (!mFuncToWait2mFuncToAdd.containsKey(calledMFName)) {
-                    mFuncToWait2mFuncToAdd.put(calledMFName, new ArrayList<>());
-                }
-                mFuncToWait2mFuncToAdd.get(calledMFName).add(currentMFunction);
             }
             return null;
         }
+
+//        @Override
+//        public Void visitMemberCall(SimpleLanguageParser.MemberCallContext ctx) {
+//            if (calledMFName == null) {
+//                return null;
+//            }
+//            if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
+//                // System.out.println("MCall: " + calledFName); //
+//                var nonLocals = mFuncToNonLocals.get(calledMFName);
+//                if (nonLocals == null) {
+//                    return null; // builtin TODO
+//                }
+//                for (var nl : mFuncToNonLocals.get(calledMFName)) {
+//                    var funcWhereWasFound = nl.fMNameWhereFound;
+//                    var varId = nl.vId;
+//                    if (!containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
+//                        addNonLocal(currentMFunction, varId, funcWhereWasFound);
+//                    }
+//                }
+//            } else {
+//                if (!calledMFName.startsWith("L")) {
+//                    return null; // builtin
+//                }
+//                if (!mFuncToWait2mFuncToAdd.containsKey(calledMFName)) {
+//                    mFuncToWait2mFuncToAdd.put(calledMFName, new ArrayList<>());
+//                }
+//                mFuncToWait2mFuncToAdd.get(calledMFName).add(currentMFunction);
+//            }
+//            return null;
+//        }
     }
 
     private SLExpressionNode createRead(SLExpressionNode nameTerm) {

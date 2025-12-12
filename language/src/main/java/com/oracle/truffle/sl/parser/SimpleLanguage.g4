@@ -114,8 +114,18 @@ if_expression
 
 
 expression
-	: or_term (OP_SEQ or_term)*
+	: assign_term (OP_SEQ assign_term)*
 	;
+
+ref
+    : IDENTIFIER                # DirRef
+    | factor '[' expression ']' # ElemRef
+    ;
+
+assign_term
+    : ref ':=' assign_term # Assignment
+    | or_term              # Expr
+    ;
 
 or_term
     : logic_term (OP_OR logic_term)*
@@ -279,6 +289,7 @@ lambda_expression
              		'{' body=block '}'
     ;
 
+
 factor
 	: if_expression                 # IfExpr
 	| lambda_expression             # LambdaExpr
@@ -290,18 +301,14 @@ factor
     | for_expression                # ForExpr
     | do_while_expression           # DoWhileExpr
     | factor '.' IDENTIFIER         # PointAccessExpr
-	| IDENTIFIER member_expression* # NameAccess
+    | IDENTIFIER '(' ( expression (',' expression)* )? ')'  # DirectCall
+    | factor '(' ( expression (',' expression)* )? ')'  # IndirectCall
+	| IDENTIFIER                    # NameAccess
+	| factor '[' expression ']'     # IndAccess
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral
 	| CHAR_LITERAL                  # CharLiteral
 	| '(' block ')'			# ParenExpression
-	;
-
-
-member_expression
-	: '(' ( expression (',' expression)* )? ')' 	# MemberCall
-	| ':=' or_term							  	    # MemberAssign
-	| '[' expression ']'							# MemberIndex
 	;
 
 // lexer

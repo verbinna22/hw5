@@ -59,7 +59,6 @@ import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.SLLanguage;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.BlockContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.FunctionContext;
-import com.oracle.truffle.sl.parser.SimpleLanguageParser.MemberAssignContext;
 import com.oracle.truffle.sl.parser.SimpleLanguageParser.NameAccessContext;
 import com.oracle.truffle.sl.runtime.SLStrings;
 
@@ -132,30 +131,6 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
     }
 
     // ------------------------------- locals handling --------------------------
-
-    private static class FindLocalsVisitor extends SimpleLanguageBaseVisitor<Void> {
-        boolean entered = false;
-        List<Token> results = new ArrayList<>();
-
-        @Override
-        public Void visitBlock(BlockContext ctx) {
-            if (entered) {
-                return null;
-            }
-
-            entered = true;
-            return super.visitBlock(ctx);
-        }
-
-        @Override
-        public Void visitNameAccess(NameAccessContext ctx) {
-            if (ctx.member_expression().size() > 0 && ctx.member_expression(0) instanceof MemberAssignContext) {
-                results.add(ctx.IDENTIFIER().getSymbol());
-            }
-
-            return super.visitNameAccess(ctx);
-        }
-    }
 
     /**
      * Maintains lexical scoping information.
