@@ -59,6 +59,7 @@ import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.util.SLToMemberNode;
 import com.oracle.truffle.sl.nodes.util.SLToTruffleStringNode;
 import com.oracle.truffle.sl.runtime.SLArray;
+import com.oracle.truffle.sl.runtime.SLClosure;
 import com.oracle.truffle.sl.runtime.SLObject;
 import com.oracle.truffle.sl.runtime.SLSexp;
 
@@ -129,6 +130,19 @@ public abstract class SLWritePropertyNode extends SLExpressionNode {
     }
 
     @Specialization(limit = "LIBRARY_LIMIT")
+    public static Object writeSLClosure(SLClosure receiver, Object index, Object value,
+                                     @Bind Node node,
+                                     @CachedLibrary("index") InteropLibrary numbers) {
+        try {
+            receiver.write(numbers.asLong(index), value);
+        } catch (UnsupportedMessageException e) {
+            throw new RuntimeException(e);
+        }
+        return value;
+    }
+
+
+    @Specialization(limit = "LIBRARY_LIMIT")
     public static Object writeSLString(StringBuilder receiver, Object index, Object value,
                                      @Bind Node node,
                                      @CachedLibrary("index") InteropLibrary numbers) {
@@ -140,7 +154,7 @@ public abstract class SLWritePropertyNode extends SLExpressionNode {
         return value;
     }
 
-    @Specialization(guards = {"!isSLString(receiver)","!isSLObject(receiver)", "!isSLArray(receiver)", "!isSLSexp(receiver)"}, limit = "LIBRARY_LIMIT")
+    @Specialization(guards = {"!isSLClosure(receiver)","!isSLString(receiver)","!isSLObject(receiver)", "!isSLArray(receiver)", "!isSLSexp(receiver)"}, limit = "LIBRARY_LIMIT")
     public static Object writeObject(Object receiver, Object name, Object value,
                     @Bind Node node,
                     @CachedLibrary("receiver") InteropLibrary objectLibrary,
@@ -165,5 +179,8 @@ public abstract class SLWritePropertyNode extends SLExpressionNode {
     }
     public static boolean isSLString(Object receiver) {
         return receiver instanceof StringBuilder;
+    }
+    public static boolean isSLClosure(Object receiver) {
+        return receiver instanceof SLClosure;
     }
 }

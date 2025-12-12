@@ -132,11 +132,11 @@ public class SLNodeParser extends SLBaseParser {
 //            }
 //        }
 //        System.out.println("------------------------");
-//        for (var name: funcToVarNameToInd.keySet()) {
-//            System.out.println("K: " + name);
-//            for (var vname : funcToVarNameToInd.get(name).keySet()) {
-//                System.out.println("V: " + vname);
-//                System.out.println("I: " + funcToVarNameToInd.get(name).get(vname));
+//        for (var name: mFuncToVarNameToInd.keySet()) {
+//            System.out.println("Func: " + name);
+//            for (var vname : mFuncToVarNameToInd.get(name).keySet()) {
+//                System.out.println("Var name: " + vname);
+//                System.out.println("I: " + mFuncToVarNameToInd.get(name).get(vname));
 //            }
 //        }
         // ----
@@ -2167,8 +2167,11 @@ public class SLNodeParser extends SLBaseParser {
 //            System.out.println(currentFunction); ///
 //            System.out.println(name.toString());///
             if (mFuncToVarNameToInd.containsKey(currentMFunction) && mFuncToVarNameToInd.get(currentMFunction).containsKey(name.toString())) {
+//                System.out.println("assign to closure");
+//                System.out.println(currentFunction); ///
+//                System.out.println(name.toString());///
                 var id = mFuncToVarNameToInd.get(currentMFunction).get(name.toString());
-                result = SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id));
+                result = SLWritePropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id), valueNode);
             } else {
                 result = new SLWriteGlobalVariableNode(globalToId.get(name), valueNode);
             }

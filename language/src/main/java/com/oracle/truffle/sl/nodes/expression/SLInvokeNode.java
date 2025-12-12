@@ -107,6 +107,8 @@ public final class SLInvokeNode extends SLExpressionNode {
                 argumentValues = new Object[argumentNodes.length + 1];
                 shift = 1;
                 argumentValues[0] = fwc.closure;
+                //System.out.println("Before exec " + fwc.function);///
+                //System.out.println(fwc.closure.length());///
             } else {
                 argumentValues = new Object[argumentNodes.length];
             }
@@ -125,7 +127,10 @@ public final class SLInvokeNode extends SLExpressionNode {
         try {
             while (true) {
                 try {
-                    return library.execute(function, argumentValues);
+                    var res = library.execute(function, argumentValues);
+//                    System.out.println("fres:" + res);
+//                    System.out.println("func:" + function);
+                    return res;
                 } catch (TailCallException e) {
                     function = e.function;
                     argumentValues = e.arguments;

@@ -120,7 +120,9 @@ public final class SLIfExpression extends SLExpressionNode {
              * The condition must evaluate to a boolean value, so we call the boolean-specialized
              * execute method.
              */
-            return conditionNode.executeLong(frame) != 0;
+            var res = conditionNode.executeLong(frame) != 0;
+            //System.out.println("result:" + res);///
+            return res;
         } catch (UnexpectedResultException ex) {
             throw CompilerDirectives.shouldNotReachHere(ex);
         }
