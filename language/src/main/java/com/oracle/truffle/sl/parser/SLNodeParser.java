@@ -969,14 +969,14 @@ public class SLNodeParser extends SLBaseParser {
 //                            System.out.println(currentFunction); ///
 //                            System.out.println(nl.fMNameWhereFound);
                         ///
-                        System.out.println("###");
-                        for (var f: mFuncToVarNameToInd.keySet()) {
-                            System.out.println("1-" + f);
-                            for (var v : mFuncToVarNameToInd.get(f).keySet()) {
-                                System.out.println("--" + v);
-                            }
-                        }
-                        System.out.println("###");
+//                        System.out.println("###");
+//                        for (var f: mFuncToVarNameToInd.keySet()) {
+//                            System.out.println("1-" + f);
+//                            for (var v : mFuncToVarNameToInd.get(f).keySet()) {
+//                                System.out.println("--" + v);
+//                            }
+//                        }
+//                        System.out.println("###");
                         ///
                         mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
                         mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
@@ -1589,9 +1589,9 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         private boolean containsTheSame(String func, String foundFunc, Integer varId) {
-            System.out.println("-----");
-            System.out.println(func);
-            System.out.println(foundFunc);///
+//            System.out.println("-----");
+//            System.out.println(func);
+//            System.out.println(foundFunc);///
             return mFuncToFoundMFuncToVarIdToInd.containsKey(func) &&
                     mFuncToFoundMFuncToVarIdToInd.get(func).containsKey(foundFunc)
                     && mFuncToFoundMFuncToVarIdToInd.get(func).get(foundFunc).containsKey(varId);
@@ -1610,30 +1610,30 @@ public class SLNodeParser extends SLBaseParser {
                     var funcWhereWasFound = nl.fMNameWhereFound;
                     var varId = nl.vId;
                     ///
-                    System.out.println("###");
-                    for (var f : mFuncToVarNameToInd.keySet()) {
-                        System.out.println("2-" + f);
-                        for (var v: mFuncToVarNameToInd.get(f).keySet()) {
-                            System.out.println("--" + v);
-                        }
-                        System.out.println("---");
-                    }
-                    System.out.println("###");
-                    /////
+//                    System.out.println("###");
+//                    for (var f : mFuncToVarNameToInd.keySet()) {
+//                        System.out.println("2-" + f);
+//                        for (var v: mFuncToVarNameToInd.get(f).keySet()) {
+//                            System.out.println("--" + v);
+//                        }
+//                        System.out.println("---");
+//                    }
+//                    System.out.println("###");
+                    ///
                     if (!Objects.equals(currentMFunction, funcWhereWasFound) && !containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
-                        System.out.println("nla" + currentMFunction + " " + funcWhereWasFound);/////
+//                        System.out.println("nla" + currentMFunction + " " + funcWhereWasFound);///
                         addNonLocal(currentMFunction, varId, funcWhereWasFound);
                         ///
-                        System.out.println("###");
-                        for (var f : mFuncToVarNameToInd.keySet()) {
-                            System.out.println("22-" + f);
-                            for (var v: mFuncToVarNameToInd.get(f).keySet()) {
-                                System.out.println("--" + v);
-                            }
-                            System.out.println("---");
-                        }
-                        System.out.println("###");
-                        /////
+//                        System.out.println("###");
+//                        for (var f : mFuncToVarNameToInd.keySet()) {
+//                            System.out.println("22-" + f);
+//                            for (var v: mFuncToVarNameToInd.get(f).keySet()) {
+//                                System.out.println("--" + v);
+//                            }
+//                            System.out.println("---");
+//                        }
+//                        System.out.println("###");
+                        ///
                     }
                 }
             } else {
@@ -1675,7 +1675,7 @@ public class SLNodeParser extends SLBaseParser {
             if (!mFuncToFoundMFuncToVarIdToInd.get(func).containsKey(funcWhereFound)) {
                 mFuncToFoundMFuncToVarIdToInd.get(func).put(funcWhereFound, new HashMap<>());
             }
-            System.out.println(func + " " + varId + " " + funcWhereFound + " dep add");/////
+//            System.out.println(func + " " + varId + " " + funcWhereFound + " dep add");///
             int ind = mFuncToNonLocals.get(func).size();
             mFuncToNonLocals.get(func).add(new NonLocal(funcWhereFound, varId));
             mFuncToFoundMFuncToVarIdToInd.get(func).get(funcWhereFound).put(varId, ind);
@@ -1729,7 +1729,7 @@ public class SLNodeParser extends SLBaseParser {
                                 var funcWhereWasFound = nl.fMNameWhereFound;
                                 var varId = nl.vId;
                                 if (!containsTheSame(fToAdd, funcWhereWasFound, varId)) {
-                                    System.out.println("nla4" + fToAdd + " " + funcWhereWasFound);/////
+//                                    System.out.println("nla4" + fToAdd + " " + funcWhereWasFound);///
                                     addNonLocal(fToAdd, varId, funcWhereWasFound); //TODO
                                     changed = true;
                                 }
@@ -1959,7 +1959,7 @@ public class SLNodeParser extends SLBaseParser {
                         var funcWhereWasFound = nl.fMNameWhereFound;
                         var varId = nl.vId;
                         if (!Objects.equals(currentMFunction, funcWhereWasFound) && !containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
-                            System.out.println("nla2" + currentMFunction + " " + funcWhereWasFound);/////
+//                            System.out.println("nla2" + currentMFunction + " " + funcWhereWasFound);///
                             addNonLocal(currentMFunction, varId, funcWhereWasFound);
                         }
                     }
@@ -2012,7 +2012,7 @@ public class SLNodeParser extends SLBaseParser {
                         var funcWhereWasFound = nl.fMNameWhereFound;
                         var varId = nl.vId;
                         if (!Objects.equals(currentMFunction, funcWhereWasFound) && !containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
-                            System.out.println("nla3" + currentMFunction + " " + funcWhereWasFound);/////
+//                            System.out.println("nla3" + currentMFunction + " " + funcWhereWasFound);///
                             addNonLocal(currentMFunction, varId, funcWhereWasFound);
                         }
                     }
@@ -2075,16 +2075,16 @@ public class SLNodeParser extends SLBaseParser {
                 //System.out.println(name); ///
         //System.out.println(currentMFunction); ///
         ///
-        System.out.println("###");
-        for (var f : mFuncToVarNameToInd.keySet()) {
-            System.out.println("2-" + f);
-            for (var v: mFuncToVarNameToInd.get(f).keySet()) {
-                System.out.println("--" + v);
-            }
-            System.out.println("---");
-        }
-        System.out.println("###");
-        /////
+//        System.out.println("###");
+//        for (var f : mFuncToVarNameToInd.keySet()) {
+//            System.out.println("2-" + f);
+//            for (var v: mFuncToVarNameToInd.get(f).keySet()) {
+//                System.out.println("--" + v);
+//            }
+//            System.out.println("---");
+//        }
+//        System.out.println("###");
+        ///
         final TruffleString name = ((SLStringLiteralNode) nameTerm).executeGeneric(null);
         final SLExpressionNode result;
         if (isFunction(name.toString())) { // process := fname
@@ -2100,11 +2100,11 @@ public class SLNodeParser extends SLBaseParser {
                         }
                         accessors.add(SLReadLocalVariableNodeGen.create(id));
                     } else {
-                            System.out.println(currentMFunction); ///
-                            System.out.println(nl.fMNameWhereFound);
-                            System.out.println(nl.vId);
-                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
-                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound); /////
+//                            System.out.println(currentMFunction); ///
+//                            System.out.println(nl.fMNameWhereFound);
+//                            System.out.println(nl.vId);
+//                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
+//                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound); ///
                         int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
                         accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
                     }
