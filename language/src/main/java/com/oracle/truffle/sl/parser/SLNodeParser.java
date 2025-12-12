@@ -1330,6 +1330,7 @@ public class SLNodeParser extends SLBaseParser {
     List<TruffleString> builtins = Arrays.asList(
             TruffleString.fromConstant("write", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("length", TruffleString.Encoding.UTF_8),
+            TruffleString.fromConstant("string", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("read", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("stacktrace", TruffleString.Encoding.UTF_8),
             TruffleString.fromConstant("helloEqualsWorld", TruffleString.Encoding.UTF_8)

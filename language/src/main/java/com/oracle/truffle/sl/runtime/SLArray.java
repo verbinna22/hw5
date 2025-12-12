@@ -1,6 +1,8 @@
 package com.oracle.truffle.sl.runtime;
 
 
+import com.oracle.truffle.sl.builtins.SLStringBuiltin;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,6 @@ public final class SLArray {
 
     @Override
     public String toString() {
-        return "[" + Arrays.stream(elements).map(Object::toString).collect(Collectors.joining(", ")) + "]";
+        return "[" + Arrays.stream(elements).map(SLStringBuiltin::toString).collect(Collectors.joining(", ")) + "]";
     }
 }

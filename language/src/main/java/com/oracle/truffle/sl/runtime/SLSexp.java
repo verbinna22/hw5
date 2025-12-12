@@ -1,5 +1,7 @@
 package com.oracle.truffle.sl.runtime;
 
+import com.oracle.truffle.sl.builtins.SLStringBuiltin;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -32,7 +34,11 @@ public class SLSexp {
 
     @Override
     public String toString() {
-        return deHash(tag) + "(" + Arrays.stream(elements).map(Object::toString).collect(Collectors.joining(", ")) + ")";
+        var result = deHash(tag);
+        if (length() > 0) {
+            result += (" (" + Arrays.stream(elements).map(SLStringBuiltin::toString).collect(Collectors.joining(", ")) + ")");
+        }
+        return result;
     }
 
     static final char[] chars = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'".toCharArray();

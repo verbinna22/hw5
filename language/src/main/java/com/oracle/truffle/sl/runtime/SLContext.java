@@ -173,6 +173,7 @@ public final class SLContext {
     private void installBuiltins() {
         installBuiltin(SLReadlnBuiltinFactory.getInstance());
         installBuiltin(SLLengthBuiltinFactory.getInstance());
+        installBuiltin(SLStringBuiltinFactory.getInstance());
         installBuiltin(SLPrintlnBuiltinFactory.getInstance());
         installBuiltin(SLNanoTimeBuiltinFactory.getInstance());
         installBuiltin(SLDefineFunctionBuiltinFactory.getInstance());
