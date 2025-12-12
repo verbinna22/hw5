@@ -4,17 +4,17 @@ import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.nodes.SLPatternNode;
 
 public class StringPattern extends SLPatternNode {
-    private final TruffleString string;
+    private final String string;
 
-    public StringPattern(TruffleString string) {
+    public StringPattern(String string) {
         this.string = string;
     }
 
     @Override
     public boolean isMatch(Object value) {
-        if (!(value instanceof TruffleString s)){
+        if (!(value instanceof StringBuilder s)){
             return false;
         }
-        return s.equals(string);
+        return s.toString().equals(string);
     }
 }

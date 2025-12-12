@@ -1121,10 +1121,12 @@ public class SLNodeParser extends SLBaseParser {
                 var parent = baseExpression;
                 List<SLPatternNode> subNodes = new ArrayList<>();
                 long i = 0;
-                for (var subCtx : ctx.pattern_list().pattern()) {
-                    baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(i++));
-                    baseExpression.addExpressionTag();
-                    subNodes.add(visitPattern(subCtx));
+                if (ctx.pattern_list() != null) {
+                    for (var subCtx : ctx.pattern_list().pattern()) {
+                        baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(i++));
+                        baseExpression.addExpressionTag();
+                        subNodes.add(visitPattern(subCtx));
+                    }
                 }
                 baseExpression = parent;
                 return new ArrayPattern(subNodes.toArray(SLPatternNode[]::new));
@@ -1191,7 +1193,10 @@ public class SLNodeParser extends SLBaseParser {
 
             @Override
             public SLPatternNode visitStringPattern(SimpleLanguageParser.StringPatternContext ctx) {
-                return new StringPattern(asTruffleString(ctx.STRING_LITERAL().getSymbol(), true));
+                var string = new StringBuilder(ctx.STRING_LITERAL().getSymbol().getText());
+                string.deleteCharAt(0);
+                string.deleteCharAt(string.length() - 1);
+                return new StringPattern(string.toString());
             }
 
             @Override
