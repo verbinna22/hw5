@@ -302,6 +302,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
         TruffleString cName = TruffleString.fromConstant("@closure", TruffleString.Encoding.UTF_8);
         curScope.declareLocal(cName);
+        result.add(cName);
         // skip over function name which is also an IDENTIFIER
         for (int i = 1; i < ctx.IDENTIFIER().size(); i++) {
             TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);
@@ -321,6 +322,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
         TruffleString cName = TruffleString.fromConstant("@closure", TruffleString.Encoding.UTF_8);
         curScope.declareLocal(cName);
+        result.add(cName);
         // skip over function name which is also an IDENTIFIER
         for (int i = 0; i < ctx.IDENTIFIER().size(); i++) {
             TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);

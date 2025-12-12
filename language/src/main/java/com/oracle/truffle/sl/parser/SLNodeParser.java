@@ -255,24 +255,25 @@ public class SLNodeParser extends SLBaseParser {
         List<SLExpressionNode> methodNodes = new ArrayList<>();
 
 
-        int i = 0;
+        int shift = 0;
         int parameterCount;
         if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
             parameterCount = enterFunctionWithClosure(ctx, functionName).size();
             TruffleString paramName = TruffleString.fromConstant("@closure", TruffleString.Encoding.UTF_8);
             int localIndex = frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, paramName, null);
-            assert localIndex == i;
+            assert localIndex == 0;
 
-            final SLReadArgumentNode readArg = new SLReadArgumentNode(i);
+            final SLReadArgumentNode readArg = new SLReadArgumentNode(0);
             readArg.setSourceSection(0, 0);
-            SLExpressionNode assignment = createAssignment(createString(paramName), readArg, i);
+            SLExpressionNode assignment = createAssignment(createString(paramName), readArg, 0);
             methodNodes.add(assignment);
-            i++;
+            shift++;
         } else {
             parameterCount = enterFunction(ctx, functionName).size();
         }
-        for (; i < parameterCount; i++) {
-            Token paramToken = ctx.IDENTIFIER(i + 1).getSymbol();
+        // System.out.println(currentMFunction + " " + parameterCount); ///
+        for (int i = shift; i < parameterCount; i++) {
+            Token paramToken = ctx.IDENTIFIER(i + 1 - shift).getSymbol();
 
             TruffleString paramName = asTruffleString(paramToken, false);
             int localIndex = frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, paramName, null);
@@ -1558,6 +1559,9 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         private boolean containsTheSame(String func, String foundFunc, Integer varId) {
+            System.out.println("-----");
+            System.out.println(func);
+            System.out.println(foundFunc);
             return mFuncToFoundMFuncToVarIdToInd.get(func).containsKey(foundFunc)
                     && mFuncToFoundMFuncToVarIdToInd.get(func).get(foundFunc).containsKey(varId);
         }
@@ -1810,6 +1814,7 @@ public class SLNodeParser extends SLBaseParser {
             var tokName = tok.getText();
             var tokTrStr = asTruffleString(tok, false);
             // calledMFName = accessibleWith(tokName);
+            // System.out.println(tokName); ////
             if (!isFunction(tokName)) {
                 if (getLocalIndex(tok) == -1 && !definedNonLocal(currentMFunction, tokName)) {
                     for (int i = functionScopes.size() - 1; i >= 0; --i) {
@@ -1826,7 +1831,8 @@ public class SLNodeParser extends SLBaseParser {
                 }
             } else {
                 var calledMFName = accessibleWith(tokName);
-                assert calledMFName != null;
+//                System.out.println("called: " + calledMFName);
+//                System.out.println("current: " + currentMFunction);
                 if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
                     // System.out.println("MCall: " + calledFName); //
                     var nonLocals = mFuncToNonLocals.get(calledMFName);
@@ -1836,7 +1842,7 @@ public class SLNodeParser extends SLBaseParser {
                     for (var nl : mFuncToNonLocals.get(calledMFName)) {
                         var funcWhereWasFound = nl.fMNameWhereFound;
                         var varId = nl.vId;
-                        if (!containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
+                        if (!Objects.equals(currentMFunction, funcWhereWasFound) && !containsTheSame(currentMFunction, funcWhereWasFound, varId)) {
                             addNonLocal(currentMFunction, varId, funcWhereWasFound);
                         }
                     }
@@ -1933,6 +1939,15 @@ public class SLNodeParser extends SLBaseParser {
     }
 
     private SLExpressionNode createRead(SLExpressionNode nameTerm) {
+        ///
+//        System.out.println("###");
+//        for (var f: mFuncToNonLocals.keySet()) {
+//            System.out.println(f);
+//            System.out.println(mFuncToNonLocals.get(f).size());
+//            System.out.println("--###");
+//        }
+//        System.out.println("###");
+        ///
         final TruffleString name = ((SLStringLiteralNode) nameTerm).executeGeneric(null);
         final SLExpressionNode result;
         if (isFunction(name.toString())) { // process := fname
@@ -1941,7 +1956,7 @@ public class SLNodeParser extends SLBaseParser {
             if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
                 List<SLExpressionNode> accessors = new ArrayList<>();
                 for (var nl : mFuncToNonLocals.get(mName)) {
-                    if (nl.fMNameWhereFound.equals(currentFunction)) {
+                    if (nl.fMNameWhereFound.equals(currentMFunction)) {
                         var id = nl.vId;
                         if (mFuncToNonLocals.containsKey(currentMFunction) && !mFuncToNonLocals.get(currentMFunction).isEmpty()) {
                             id += 1;
@@ -1949,10 +1964,10 @@ public class SLNodeParser extends SLBaseParser {
                         accessors.add(SLReadLocalVariableNodeGen.create(id));
                     } else {
 //                            System.out.println(currentFunction); ///
-//                            System.out.println(nl.fNameWhereFound);
+//                            System.out.println(nl.fMNameWhereFound);
 //                            System.out.println(nl.vId);
-//                            funcToFoundFuncToVarIdToInd.get(currentFunction);
-//                            funcToFoundFuncToVarIdToInd.get(currentFunction).get(nl.fNameWhereFound); ///
+//                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
+//                        mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound); ///
                         int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
                         accessors.add(SLReadPropertyNodeGen.create(SLReadLocalVariableNodeGen.create(0), new SLLongLiteralNode(id)));
                     }
