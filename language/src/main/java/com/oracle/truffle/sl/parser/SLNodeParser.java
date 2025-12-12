@@ -359,9 +359,9 @@ public class SLNodeParser extends SLBaseParser {
                 var variableDefinition = definition.varSingleLineDef();
                 if (variableDefinition != null) {
                     for (var variable : variableDefinition.varSingleDef().reversed()) {
-                        if (variable.or_term() != null) {
+                        if (variable.list_term() != null) {
                             var varToken = variable.IDENTIFIER().getSymbol();
-                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var valueNode = expressionVisitor.visitList_term(variable.list_term());
                             var result = createAssignment(createString(varToken, false), valueNode, null);
                             bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
                         }
@@ -436,9 +436,9 @@ public class SLNodeParser extends SLBaseParser {
                 var variableDefinition = definition.varSingleLineDef();
                 if (variableDefinition != null) {
                     for (var variable : variableDefinition.varSingleDef().reversed()) {
-                        if (variable.or_term() != null) {
+                        if (variable.list_term() != null) {
                             var varToken = variable.IDENTIFIER().getSymbol();
-                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var valueNode = expressionVisitor.visitList_term(variable.list_term());
                             var result = createAssignment(createString(varToken, false), valueNode, null);
                             bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
                         }
@@ -545,9 +545,9 @@ public class SLNodeParser extends SLBaseParser {
                 var variableDefinition = definition.varSingleLineDef();
                 if (variableDefinition != null) {
                     for (var variable : variableDefinition.varSingleDef().reversed()) {
-                        if (variable.or_term() != null) {
+                        if (variable.list_term() != null) {
                             var varToken = variable.IDENTIFIER().getSymbol();
-                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var valueNode = expressionVisitor.visitList_term(variable.list_term());
                             var result = createAssignment(createString(varToken, false), valueNode, null);
                             bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
                         }
@@ -622,9 +622,9 @@ public class SLNodeParser extends SLBaseParser {
                 var variableDefinition = definition.varSingleLineDef();
                 if (variableDefinition != null) {
                     for (var variable : variableDefinition.varSingleDef().reversed()) {
-                        if (variable.or_term() != null) {
+                        if (variable.list_term() != null) {
                             var varToken = variable.IDENTIFIER().getSymbol();
-                            var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                            var valueNode = expressionVisitor.visitList_term(variable.list_term());
                             var result = createAssignment(createString(varToken, false), valueNode, null);
                             bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
                         }
@@ -759,6 +759,11 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitList_term(SimpleLanguageParser.List_termContext ctx) {
+            return createBinary(ctx.or_term().reversed(), ctx.OP_CONS());
+        }
+
+        @Override
         public SLExpressionNode visitOr_term(SimpleLanguageParser.Or_termContext ctx) {
             return createBinary(ctx.logic_term(), ctx.OP_OR());
         }
@@ -813,6 +818,12 @@ public class SLNodeParser extends SLBaseParser {
             switch (opToken.getText()) {
                 case ";":
                     result = new SLSeqNode(leftUnboxed, rightUnboxed);
+                    break;
+                case ":":
+                    var components = new SLExpressionNode[2];
+                    components[1] = leftUnboxed;
+                    components[0] = rightUnboxed;
+                    result = new SLSexpNode("Cons", components);
                     break;
                 case "+":
                     result = SLAddNodeGen.create(leftUnboxed, rightUnboxed);
@@ -1307,9 +1318,9 @@ public class SLNodeParser extends SLBaseParser {
                     var variableDefinition = definition.varSingleLineDef();
                     if (variableDefinition != null) {
                         for (var variable : variableDefinition.varSingleDef().reversed()) {
-                            if (variable.or_term() != null) {
+                            if (variable.list_term() != null) {
                                 var varToken = variable.IDENTIFIER().getSymbol();
-                                var valueNode = expressionVisitor.visitOr_term(variable.or_term());
+                                var valueNode = expressionVisitor.visitList_term(variable.list_term());
                                 var result = createAssignment(createString(varToken, false), valueNode, null);
                                 bodyNodes.set(0, new SLSeqNode(result, bodyNodes.get(0)));
                             }

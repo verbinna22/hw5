@@ -72,7 +72,7 @@ function
 	;
 
 varSingleDef
-    : IDENTIFIER ('=' val=or_term)?
+    : IDENTIFIER ('=' val=list_term)?
     ;
 
 varSingleLineDef
@@ -124,7 +124,11 @@ ref
 
 assign_term
     : ref ':=' assign_term # Assignment
-    | or_term              # Expr
+    | list_term              # Expr
+    ;
+
+list_term
+    : or_term (OP_CONS or_term)*
     ;
 
 or_term
@@ -323,6 +327,7 @@ COMMENT : '(*' .*? '*)' -> skip;
 LINE_COMMENT : '--' ~[\r\n]* -> skip;
 
 OP_SEQ: ';';
+OP_CONS: ':';
 OP_OR: '!!';
 OP_AND: '&&';
 OP_COMPARE: '<' | '<=' | '>' | '>=' | '==' | '!=';
