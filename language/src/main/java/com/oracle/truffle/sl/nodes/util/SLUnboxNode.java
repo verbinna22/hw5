@@ -63,11 +63,18 @@ import com.oracle.truffle.sl.runtime.SLNull;
  * expression nodes need to expect.
  */
 @TypeSystemReference(SLTypes.class)
-@NodeChild
+@NodeChild("oneNode")
 @OperationProxy.Proxyable(allowUncached = true)
 public abstract class SLUnboxNode extends SLExpressionNode {
 
     public static final int LIMIT = 5;
+
+    public abstract SLExpressionNode getOneNode();
+
+    @Override
+    public void setIsTail() {
+        getOneNode().setIsTail();
+    }
 
     @Specialization
     public static TruffleString fromString(String value,

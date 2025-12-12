@@ -249,7 +249,6 @@ public class SLNodeParser extends SLBaseParser {
         TruffleString functionName = asTruffleString(nameToken, false);
         currentFunction = functionName.toString();
         currentMFunction = mangleName(currentFunction, ctx.s.getStartIndex());
-
         int functionStartPos = nameToken.getStartIndex();
         frameDescriptorBuilder = FrameDescriptor.newBuilder();
         List<SLExpressionNode> methodNodes = new ArrayList<>();
@@ -295,7 +294,9 @@ public class SLNodeParser extends SLBaseParser {
         final SLExpressionNode methodBlock = new SLBlockExpression(methodNodes.toArray(new SLExpressionNode[methodNodes.size()]));
         methodBlock.setSourceSection(functionStartPos, bodyEndPos - functionStartPos);
 
+        //System.out.println("visit setIsTail" + functionName.toString());///
         methodBlock.setIsTail();
+        //System.out.println("visit endIsTail" + functionName.toString());///
         final SLFunctionBodyNode functionBodyNode = new SLFunctionBodyNode(methodBlock);
         functionBodyNode.setSourceSection(functionSrc.getCharIndex(), functionSrc.getCharLength());
 
@@ -373,16 +374,17 @@ public class SLNodeParser extends SLBaseParser {
             exitBlock();
             exitScope();
 
-            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
-            flattenBlocks(bodyNodes, flattenedNodes);
-            int n = flattenedNodes.size();
-            for (int i = 0; i < n; i++) {
-                SLStatementNode statement = flattenedNodes.get(i);
-                if (statement.hasSource() && !isHaltInCondition(statement)) {
-                    statement.addStatementTag();
-                }
-            }
-            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+//            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+//            flattenBlocks(bodyNodes, flattenedNodes);
+//            int n = flattenedNodes.size();
+//            for (int i = 0; i < n; i++) {
+//                SLStatementNode statement = flattenedNodes.get(i);
+//                if (statement.hasSource() && !isHaltInCondition(statement)) {
+//                    statement.addStatementTag();
+//                }
+//            }
+            // flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()])
+            SLBlockExpression blockNode = new SLBlockExpression(bodyNodes.toArray(SLExpressionNode[]::new));
             if (endPos - startPos > 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
@@ -560,16 +562,17 @@ public class SLNodeParser extends SLBaseParser {
             exitBlock();
             exitScope();
 
-            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
-            flattenBlocks(bodyNodes, flattenedNodes);
-            int n = flattenedNodes.size();
-            for (int i = 0; i < n; i++) {
-                SLStatementNode statement = flattenedNodes.get(i);
-                if (statement.hasSource() && !isHaltInCondition(statement)) {
-                    statement.addStatementTag();
-                }
-            }
-            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+//            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+//            flattenBlocks(bodyNodes, flattenedNodes);
+//            int n = flattenedNodes.size();
+//            for (int i = 0; i < n; i++) {
+//                SLStatementNode statement = flattenedNodes.get(i);
+//                if (statement.hasSource() && !isHaltInCondition(statement)) {
+//                    statement.addStatementTag();
+//                }
+//            }
+            // flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()])
+            SLBlockExpression blockNode = new SLBlockExpression(bodyNodes.toArray(SLExpressionNode[]::new));
             if (endPos - startPos > 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
@@ -637,16 +640,17 @@ public class SLNodeParser extends SLBaseParser {
             exitBlock();
             exitScope();
 
-            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
-            flattenBlocks(bodyNodes, flattenedNodes);
-            int n = flattenedNodes.size();
-            for (int i = 0; i < n; i++) {
-                SLStatementNode statement = flattenedNodes.get(i);
-                if (statement.hasSource() && !isHaltInCondition(statement)) {
-                    statement.addStatementTag();
-                }
-            }
-            SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+//            List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+//            flattenBlocks(bodyNodes, flattenedNodes);
+//            int n = flattenedNodes.size();
+//            for (int i = 0; i < n; i++) {
+//                SLStatementNode statement = flattenedNodes.get(i);
+//                if (statement.hasSource() && !isHaltInCondition(statement)) {
+//                    statement.addStatementTag();
+//                }
+//            }
+            // flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()])
+            SLBlockExpression blockNode = new SLBlockExpression(bodyNodes.toArray(SLExpressionNode[]::new));
             if (endPos - startPos > 0) {
                 blockNode.setSourceSection(startPos, endPos - startPos);
             } else {
@@ -1366,16 +1370,17 @@ public class SLNodeParser extends SLBaseParser {
                 exitBlock();
                 exitScope();
 
-                List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
-                flattenBlocks(bodyNodes, flattenedNodes);
-                int n = flattenedNodes.size();
-                for (int i = 0; i < n; i++) {
-                    SLStatementNode statement = flattenedNodes.get(i);
-                    if (statement.hasSource() && !isHaltInCondition(statement)) {
-                        statement.addStatementTag();
-                    }
-                }
-                SLBlockExpression blockNode = new SLBlockExpression(flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()]));
+//                List<SLExpressionNode> flattenedNodes = new ArrayList<>(bodyNodes.size());
+//                flattenBlocks(bodyNodes, flattenedNodes);
+//                int n = flattenedNodes.size();
+//                for (int i = 0; i < n; i++) {
+//                    SLStatementNode statement = flattenedNodes.get(i);
+//                    if (statement.hasSource() && !isHaltInCondition(statement)) {
+//                        statement.addStatementTag();
+//                    }
+//                }
+                // flattenedNodes.toArray(new SLExpressionNode[flattenedNodes.size()])
+                SLBlockExpression blockNode = new SLBlockExpression(bodyNodes.toArray(SLExpressionNode[]::new));
                 if (endPos - startPos > 0) {
                     blockNode.setSourceSection(startPos, endPos - startPos);
                 } else {
@@ -1541,7 +1546,7 @@ public class SLNodeParser extends SLBaseParser {
 //            System.out.println("@@@@@@@@@@@@@@@@@@");
 //            cfs = cfs.parent;
 //        }
-//        System.out.println("END"); /////
+//        System.out.println("END"); ////
 //        }
         while (!curFScope.functions.containsKey(tName) && !curFScope.locals.contains(tName) && curFScope.parent != null) {
             curFScope = curFScope.parent;
