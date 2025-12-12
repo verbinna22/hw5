@@ -278,6 +278,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         for (int i = 1; i < ctx.IDENTIFIER().size(); i++) {
             TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);
             curScope.declareLocal(paramName);
+            fScope.declareVariable(paramName.toString());
             result.add(paramName);
         }
 
@@ -294,6 +295,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         for (int i = 0; i < ctx.IDENTIFIER().size(); i++) {
             TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);
             curScope.declareLocal(paramName);
+            fScope.declareVariable(paramName.toString());
             result.add(paramName);
         }
 
@@ -314,6 +316,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         for (int i = 1; i < ctx.IDENTIFIER().size(); i++) {
             TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);
             curScope.declareLocal(paramName);
+            fScope.declareVariable(paramName.toString());
             result.add(paramName);
         }
 
@@ -334,6 +337,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
         for (int i = 0; i < ctx.IDENTIFIER().size(); i++) {
             TruffleString paramName = asTruffleString(ctx.IDENTIFIER(i).getSymbol(), false);
             curScope.declareLocal(paramName);
+            fScope.declareVariable(paramName.toString());
             result.add(paramName);
         }
 

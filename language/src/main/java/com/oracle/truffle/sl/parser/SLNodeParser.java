@@ -1504,7 +1504,7 @@ public class SLNodeParser extends SLBaseParser {
     public boolean isFunction(String name) {
         var curFScope = fScope;
         var tName = TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8);
-//        if (name.equals("tl")) {
+//        if (name.equals("f")) {
 //        System.out.println("BEG"); ///
 //        var cfs = curFScope;
 //        while (cfs.parent != null) {
@@ -1525,16 +1525,16 @@ public class SLNodeParser extends SLBaseParser {
 //            System.out.println("@@@@@@@@@@@@@@@@@@");
 //            cfs = cfs.parent;
 //        }
-//        System.out.println("END"); ////
+//        System.out.println("END"); /////
 //        }
         while (!curFScope.functions.containsKey(tName) && !curFScope.locals.contains(tName) && curFScope.parent != null) {
             curFScope = curFScope.parent;
         }
-        if (curFScope.functions.containsKey(tName)) {
-            return true;
-        }
         if (curFScope.locals.contains(tName)) {
             return false;
+        }
+        if (curFScope.functions.containsKey(tName)) {
+            return true;
         }
         return curFScope.accessibleWith(tName) != null;
     }
