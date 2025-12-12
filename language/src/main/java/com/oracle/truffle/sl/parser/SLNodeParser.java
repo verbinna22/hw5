@@ -670,6 +670,29 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitList_expression(SimpleLanguageParser.List_expressionContext ctx) {
+            SLExpressionNode[] children;
+            var expr_list = ctx.expr_list();
+            if (expr_list == null) {
+                children = new SLExpressionNode[0];
+            } else {
+                children = expr_list.expression().stream().map(e -> expressionVisitor.visitExpression(e)).toArray(SLExpressionNode[]::new);
+            }
+            var result = new SLSexpNode("Nil", new SLExpressionNode[0]);
+            final int start = ctx.getStart().getStartIndex();
+            final int end = ctx.getStop().getStopIndex() + 1;
+            result.setSourceSection(start, end - start);
+            for (int i = children.length - 1; i >= 0; --i) {
+                var components = new SLExpressionNode[2];
+                components[0] = children[i];
+                components[1] = result;
+                result = new SLSexpNode("Cons", components);
+                result.setSourceSection(start, end - start);
+            }
+            return result;
+        }
+
+        @Override
         public SLExpressionNode visitSexp_expression(SimpleLanguageParser.Sexp_expressionContext ctx) {
             SLExpressionNode[] children;
             var expr_list = ctx.expr_list();
@@ -1108,7 +1131,29 @@ public class SLNodeParser extends SLBaseParser {
 
             @Override
             public SLPatternNode visitListPattern(SimpleLanguageParser.ListPatternContext ctx) {
-                return null;
+                var parent = baseExpression;
+                var child = baseExpression;
+                List<SLPatternNode> subNodes = new ArrayList<>();
+                var tagNil = SLSexp.lTagHash("Nil");
+                var tagCons = SLSexp.lTagHash("Cons");
+                var result = new SexprPattern(tagNil, new SLPatternNode[0]);
+                if (ctx.pattern_list() != null) {
+                    for (var subCtx : ctx.pattern_list().pattern()) {
+                        baseExpression = SLReadPropertyNodeGen.create(child, new SLLongLiteralNode(0));
+                        baseExpression.addExpressionTag();
+                        child = SLReadPropertyNodeGen.create(child, new SLLongLiteralNode(1));
+                        child.addExpressionTag();
+                        subNodes.add(visitPattern(subCtx));
+                    }
+                }
+                for (var pat : subNodes.reversed()) {
+                    var components = new SLPatternNode[2];
+                    components[0] = pat;
+                    components[1] = result;
+                    result = new SexprPattern(tagCons, components);
+                }
+                baseExpression = parent;
+                return result;
             }
 
             @Override
@@ -1194,7 +1239,17 @@ public class SLNodeParser extends SLBaseParser {
 
             @Override
             public SLPatternNode visitConsPattern(SimpleLanguageParser.ConsPatternContext ctx) {
-                return null;
+                var tagCons = SLSexp.lTagHash("Cons");
+                var parent = baseExpression;
+                baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(0));
+                var hd = visit(ctx.simplePattern());
+                baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(1));
+                var tl = visit(ctx.pattern());
+                baseExpression = parent;
+                var components = new SLPatternNode[2];
+                components[0] = hd;
+                components[1] = tl;
+                return new SexprPattern(tagCons, components);
             }
 
             @Override

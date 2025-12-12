@@ -162,6 +162,10 @@ array_expression
     : '[' (expr_list)? ']'
     ;
 
+list_expression
+    : '{' (expr_list)? '}'
+    ;
+
 sexp_expression
     : UIDENTIFIER ('(' expr_list ')')?
     ;
@@ -295,6 +299,7 @@ factor
 	| lambda_expression             # LambdaExpr
 	| case_expression               # CaseExpr
 	| array_expression              # ArrayExpr
+	| list_expression               # ListExpr
 	| sexp_expression               # SexpExpr
 	| skip_expression               # SkipExpr
     | while_expression              # WhileExpr
