@@ -3,6 +3,8 @@ package com.oracle.truffle.sl.nodes.patterns;
 import com.oracle.truffle.sl.nodes.SLPatternNode;
 import com.oracle.truffle.sl.runtime.SLSexp;
 
+import static com.oracle.truffle.sl.runtime.SLSexp.deHash;
+
 public class SexprPattern extends SLPatternNode {
     private SLPatternNode[] nodes;
     private long tag;

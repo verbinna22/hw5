@@ -6,6 +6,6 @@ import com.oracle.truffle.sl.nodes.SLPatternNode;
 public class StrTagPattern extends SLPatternNode {
     @Override
     public boolean isMatch(Object value) {
-        return value instanceof TruffleString;
+        return value instanceof StringBuilder;
     }
 }
