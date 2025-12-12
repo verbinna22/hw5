@@ -968,10 +968,12 @@ public class SLNodeParser extends SLBaseParser {
                 var parent = baseExpression;
                 List<SLPatternNode> subNodes = new ArrayList<>();
                 long i = 0;
-                for (var subCtx : ctx.pattern_list().pattern()) {
-                    baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(i++));
-                    baseExpression.addExpressionTag();
-                    subNodes.add(visitPattern(subCtx));
+                if (ctx.pattern_list() != null) {
+                    for (var subCtx : ctx.pattern_list().pattern()) {
+                        baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(i++));
+                        baseExpression.addExpressionTag();
+                        subNodes.add(visitPattern(subCtx));
+                    }
                 }
                 baseExpression = parent;
                 var tag = SLSexp.lTagHash(ctx.UIDENTIFIER().getSymbol().getText());
