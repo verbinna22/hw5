@@ -964,10 +964,20 @@ public class SLNodeParser extends SLBaseParser {
                         accessors.add(SLReadLocalVariableNodeGen.create(id));
                     } else {
 //                            System.out.println(currentFunction); ///
-//                            System.out.println(nl.fNameWhereFound);
+//                            System.out.println(nl.fMNameWhereFound);
 //                            System.out.println(nl.vId);
 //                            System.out.println(currentFunction); ///
 //                            System.out.println(nl.fMNameWhereFound);
+                        /////
+                        System.out.println("###");
+                        for (var f: mFuncToVarNameToInd.keySet()) {
+                            System.out.println("1-" + f);
+                            for (var v : mFuncToVarNameToInd.get(f).keySet()) {
+                                System.out.println("--" + v);
+                            }
+                        }
+                        System.out.println("###");
+                        /////
                         mFuncToFoundMFuncToVarIdToInd.get(currentMFunction);
                         mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound);
                         int id = mFuncToFoundMFuncToVarIdToInd.get(currentMFunction).get(nl.fMNameWhereFound).get(nl.vId);
@@ -1494,24 +1504,34 @@ public class SLNodeParser extends SLBaseParser {
         var curFScope = fScope;
         var curVScope = curScope;
         var tName = TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8);
-//        System.out.println("BEG"); ///
-//        var cfs = curFScope;
-//        while (cfs.parent != null) {
-//            System.out.println("------------------"); ///
-//            for (var k : curFScope.functions.keySet()) {
-//                System.out.println("Key:" + k + " Val:" + curFScope.functions.get(k));
-//            }
-//            System.out.println("@@@@@@@@@@@@@@@@@@");
-//            cfs = cfs.parent;
-//        }
-        while (!curFScope.functions.containsKey(tName) && !curVScope.localDeclared(tName) && curFScope.parent != null && curVScope.parent != null) {
+        System.out.println("BEG"); ///
+        var cfs = curFScope;
+        while (cfs.parent != null) {
+            System.out.println("------------------"); ///
+            for (var k : cfs.functions.keySet()) {
+                System.out.println("Key:" + k + " Val:" + cfs.functions.get(k));
+            }
+            System.out.println("@@@@@@@@@@@@@@@@@@");
+            cfs = cfs.parent;
+        }
+        System.out.println("BEG2"); ///
+        cfs = curFScope;
+        while (cfs.parent != null) {
+            System.out.println("------------------"); ///
+            for (var k : cfs.locals) {
+                System.out.println("Key:" + k);
+            }
+            System.out.println("@@@@@@@@@@@@@@@@@@");
+            cfs = cfs.parent;
+        }
+        System.out.println("END"); /////
+        while (!curFScope.functions.containsKey(tName) && !curFScope.locals.contains(tName) && curFScope.parent != null) {
             curFScope = curFScope.parent;
-            curVScope = curVScope.parent;
         }
         if (curFScope.functions.containsKey(tName)) {
             return true;
         }
-        if (curVScope.localDeclared(tName)) {
+        if (curFScope.locals.contains(tName)) {
             return false;
         }
         return curFScope.accessibleWith(tName) != null;
@@ -1538,11 +1558,20 @@ public class SLNodeParser extends SLBaseParser {
             @Override
             public Void visitLambda_expression(SimpleLanguageParser.Lambda_expressionContext ctx) {
                 currentFunction = "@lambda" + ctx.b.getStartIndex();
-                // System.out.println(currentFunction);//
+                currentMFunction = currentFunction;
+                 System.out.println(currentFunction + " from lambda");/////
                 mFunctionLevel.put(currentFunction, functionScopes.size());
                 enterLambda(ctx, TruffleString.fromConstant(currentFunction, TruffleString.Encoding.UTF_8));
                 NonLocalVisitor.this.visitBlock(ctx.body);
                 // System.out.println("exit visitFunction " + currentFunction); //
+                /////
+                for (var f: mFuncToVarNameToInd.keySet()) {
+                    System.out.println("3-" + f);
+                    for (var v : mFuncToVarNameToInd.get(f).keySet()) {
+                        System.out.println("--" + v);
+                    }
+                }
+                /////
                 return null;
             }
             @Override
@@ -1584,6 +1613,7 @@ public class SLNodeParser extends SLBaseParser {
             int ind = mFuncToNonLocals.get(func).size();
             mFuncToNonLocals.get(func).add(new NonLocal(funcWhereFound, varId));
             mFuncToFoundMFuncToVarIdToInd.get(func).get(funcWhereFound).put(varId, ind);
+            System.out.println(func + "----------------" + varName);/////
             mFuncToVarNameToInd.get(func).put(varName, ind);
         }
 
@@ -1602,6 +1632,13 @@ public class SLNodeParser extends SLBaseParser {
             for (var def : ctx.def()) {
                 if (def.function() != null) {
                     visitFunction(def.function());
+                } else {
+                    var df = def.varSingleLineDef();
+                    for (var d : df.varSingleDef()) {
+                        if (d.list_term() != null) {
+                            new LambdaNLVisitor().visitChildren(d.list_term());
+                        }
+                    }
                 }
             }
             if (ctx.expression() != null) {
@@ -1667,6 +1704,10 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public Void visitBlock(SimpleLanguageParser.BlockContext ctx) {
+            if (currentFunction.startsWith("@")) {
+                System.out.println(currentFunction + " from lambda block");/////
+            }
+
             var fName = currentFunction;
             var fMName = currentMFunction;
             enterBlock(ctx);
@@ -1813,9 +1854,16 @@ public class SLNodeParser extends SLBaseParser {
             var tok = ctx.IDENTIFIER().getSymbol();
             var tokName = tok.getText();
             var tokTrStr = asTruffleString(tok, false);
+
+            if (currentFunction.startsWith("@")) {
+                System.out.println(currentFunction + " from lambda " + tokName);/////
+            }
             // calledMFName = accessibleWith(tokName);
             // System.out.println(tokName); ////
             if (!isFunction(tokName)) {
+                if (currentFunction.startsWith("@l")) {
+                    System.out.println(currentFunction + " from lambda not function " + tokName);/////
+                }
                 if (getLocalIndex(tok) == -1 && !definedNonLocal(currentMFunction, tokName)) {
                     for (int i = functionScopes.size() - 1; i >= 0; --i) {
                         var scope = functionScopes.get(i);
@@ -1824,12 +1872,26 @@ public class SLNodeParser extends SLBaseParser {
 //                            for (var fnm : functionNames) {
 //                                System.out.println(fnm); ///
 //                            } ///
+                            if (currentFunction.startsWith("@l")) {
+                                System.out.println(currentFunction + " from lambda not function " + tokName + " " + functionMNames.get(i) + " " + currentMFunction);/////
+                            }
                             addNonLocal(currentMFunction, scope.getLocalIndex(tokTrStr), functionMNames.get(i), tokName);
+                            /////
+                            for (var f: mFuncToVarNameToInd.keySet()) {
+                                System.out.println("4-" + f);
+                                for (var v : mFuncToVarNameToInd.get(f).keySet()) {
+                                    System.out.println("--" + v);
+                                }
+                            }
+                            /////
                             break;
                         }
                     }
                 }
             } else {
+                if (currentFunction.startsWith("@l")) {
+                    System.out.println(currentFunction + " from lambda function " + tokName);/////
+                }
                 var calledMFName = accessibleWith(tokName);
 //                System.out.println("called: " + calledMFName);
 //                System.out.println("current: " + currentMFunction);
@@ -1861,6 +1923,9 @@ public class SLNodeParser extends SLBaseParser {
 
         @Override
         public Void visitDirectCall(SimpleLanguageParser.DirectCallContext ctx) {
+            if (currentFunction.startsWith("@l")) {
+                System.out.println(currentFunction + " from lambda dc");/////
+            }
             var tok = ctx.IDENTIFIER().getSymbol();
             var tokName = tok.getText();
             var tokTrStr = asTruffleString(tok, false);
@@ -1884,7 +1949,8 @@ public class SLNodeParser extends SLBaseParser {
                 if (!Objects.equals(mFunctionLevel.get(calledMFName), mFunctionLevel.get(currentMFunction))) {
                     // System.out.println("MCall: " + calledFName); //
                     var nonLocals = mFuncToNonLocals.get(calledMFName);
-                    if (nonLocals == null) {
+                    if (nonLocals == null || Objects.equals(currentMFunction, "@main")) {
+                        visitChildren(ctx);
                         return null; // builtin TODO
                     }
                     for (var nl : mFuncToNonLocals.get(calledMFName)) {
@@ -1896,6 +1962,7 @@ public class SLNodeParser extends SLBaseParser {
                     }
                 } else {
                     if (!calledMFName.startsWith("L")) {
+                        visitChildren(ctx);
                         return null; // builtin
                     }
                     if (!mFuncToWait2mFuncToAdd.containsKey(calledMFName)) {
@@ -1904,6 +1971,7 @@ public class SLNodeParser extends SLBaseParser {
                     mFuncToWait2mFuncToAdd.get(calledMFName).add(currentMFunction);
                 }
             }
+            visitChildren(ctx);
             return null;
         }
 
@@ -1981,6 +2049,19 @@ public class SLNodeParser extends SLBaseParser {
             return new SLFunctionWithClosureExpression(closureNode, func);
         }
         final int frameSlot = getLocalIndex(name);
+        System.out.println(name); /////
+        System.out.println(currentMFunction); /////
+        /////
+        System.out.println("###");
+        for (var f : mFuncToVarNameToInd.keySet()) {
+            System.out.println("2-" + f);
+            for (var v: mFuncToVarNameToInd.get(f).keySet()) {
+                System.out.println("--" + v);
+            }
+            System.out.println("---");
+        }
+        System.out.println("###");
+        /////
         if (frameSlot != -1) {
             result = SLReadLocalVariableNodeGen.create(frameSlot);
         } else {

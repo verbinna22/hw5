@@ -138,16 +138,19 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
     protected class FunctionScope {
         final FunctionScope parent;
         protected final Map<TruffleString, TruffleString> functions;
+        protected final Set<TruffleString> locals;
 
 
         protected FunctionScope(FunctionScope parent) {
             this.parent = parent;
             this.functions = new HashMap<>();
+            this.locals = new HashSet<>();
         }
 
         protected FunctionScope() {
             this.parent = null;
             this.functions = new HashMap<>();
+            this.locals = new HashSet<>();
         }
 
         TruffleString mangleName(TruffleString name, int sPos) {
@@ -160,6 +163,10 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
 
         void declareFunction(String name, int sPos) {
             functions.put(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8), mangleName(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8), sPos));
+        }
+
+        void declareVariable(String name) {
+            locals.add(TruffleString.fromConstant(name, TruffleString.Encoding.UTF_8));
         }
 
         void declareBuiltin(TruffleString name) {
@@ -200,7 +207,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
     protected class LocalScope {
         final LocalScope parent;
         // Maps local names to a unique index.
-        private final Map<TruffleString, Integer> locals;
+        final Map<TruffleString, Integer> locals;
         // Tracks which locals have been initialized in this scope.
         private final Set<TruffleString> initialized;
 
@@ -358,6 +365,10 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
             if (fn != null) {
                 // System.out.println(fn.IDENTIFIER(0).getSymbol().getText()); ////
                 fScope.declareFunction(fn.IDENTIFIER(0).getSymbol().getText(), fn.s.getStartIndex());
+            } else {
+                for (var d : f.varSingleLineDef().varSingleDef()) {
+                    fScope.declareVariable(d.IDENTIFIER().getSymbol().getText());
+                }
             }
         }
         //System.out.println("enterb"); ////
