@@ -918,6 +918,12 @@ public class SLNodeParser extends SLBaseParser {
         }
 
         @Override
+        public SLExpressionNode visitCharLiteral(SimpleLanguageParser.CharLiteralContext ctx) {
+            var literal = ctx.CHAR_LITERAL().getSymbol().getText();
+            return new SLLongLiteralNode((long)literal.charAt(1));
+        }
+
+        @Override
         public SLExpressionNode visitNumericLiteral(NumericLiteralContext ctx) {
             Token literalToken = ctx.NUMERIC_LITERAL().getSymbol();
             SLExpressionNode result;
@@ -1239,8 +1245,12 @@ public class SLNodeParser extends SLBaseParser {
                 result = SLWritePropertyNodeGen.create(assignmentReceiver, assignmentName, valueNode);
 
                 final int start = assignmentReceiver.getSourceCharIndex();
-                final int length = valueNode.getSourceEndIndex() - start;
-                result.setSourceSection(start, length);
+                final int length = valueNode.getSourceEndIndex() - start + 1;
+                if (length >= 0 && start >= 0) {
+                    result.setSourceSection(start, length);
+                } else {
+                    result.setSourceSection(0, 0);
+                }
                 result.addExpressionTag();
             }
 

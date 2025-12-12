@@ -322,6 +322,13 @@ public interface SimpleLanguageVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNumericLiteral(SimpleLanguageParser.NumericLiteralContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code CharLiteral}
+	 * labeled alternative in {@link SimpleLanguageParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCharLiteral(SimpleLanguageParser.CharLiteralContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code DoWhileExpr}
 	 * labeled alternative in {@link SimpleLanguageParser#factor}.
 	 * @param ctx the parse tree

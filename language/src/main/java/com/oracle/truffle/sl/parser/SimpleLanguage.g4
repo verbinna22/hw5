@@ -288,6 +288,7 @@ factor
 	| IDENTIFIER member_expression* # NameAccess
 	| STRING_LITERAL				# StringLiteral
 	| NUMERIC_LITERAL				# NumericLiteral
+	| CHAR_LITERAL                  # CharLiteral
 	| '(' block ')'			# ParenExpression
 	;
 
