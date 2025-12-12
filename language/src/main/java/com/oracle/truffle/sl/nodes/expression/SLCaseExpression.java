@@ -30,6 +30,8 @@ public final class SLCaseExpression extends SLExpressionNode {
     public Object executeGeneric(VirtualFrame frame) {
         Object value = expr.executeGeneric(frame);
         for (int i = 0; i < branchNodes.length; ++i) {
+//            System.out.println("val " + value.toString());/////
+//            System.out.println("pat " + patternNodes[i].toString()); /////
             if (patternNodes[i].isMatch(value)) {
                 return branchNodes[i].executeGeneric(frame);
             }

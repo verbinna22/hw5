@@ -8,4 +8,9 @@ public class StrTagPattern extends SLPatternNode {
     public boolean isMatch(Object value) {
         return value instanceof StringBuilder;
     }
+
+    @Override
+    public String toString() {
+        return "#str";
+    }
 }

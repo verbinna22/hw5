@@ -7,4 +7,9 @@ public class ValTagPattern extends SLPatternNode {
     public boolean isMatch(Object value) {
         return value instanceof Long;
     }
+
+    @Override
+    public String toString() {
+        return "#val";
+    }
 }

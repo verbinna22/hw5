@@ -414,6 +414,7 @@ public abstract class SLBaseParser extends SimpleLanguageBaseVisitor<Void> {
             TruffleString name = asTruffleString(tok, false);
             if (!curScope.localDeclared(name)) {
                 curScope.declareLocal(name);
+                fScope.locals.add(name);
             } else {
                 semErr(tok, tok.getText() + " variable redefinition");
             }

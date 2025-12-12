@@ -8,4 +8,9 @@ public class ArrayTagPattern extends SLPatternNode {
     public boolean isMatch(Object value) {
         return value instanceof SLArray;
     }
+
+    @Override
+    public String toString() {
+        return "#array";
+    }
 }

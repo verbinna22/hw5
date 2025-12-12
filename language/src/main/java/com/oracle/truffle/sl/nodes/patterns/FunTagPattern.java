@@ -8,4 +8,9 @@ public class FunTagPattern extends SLPatternNode {
     public boolean isMatch(Object value) {
         return value instanceof SLFunctionWithClosure;
     }
+
+    @Override
+    public String toString() {
+        return "#fun";
+    }
 }

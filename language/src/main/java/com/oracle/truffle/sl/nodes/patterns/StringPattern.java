@@ -17,4 +17,9 @@ public class StringPattern extends SLPatternNode {
         }
         return s.toString().equals(string);
     }
+
+    @Override
+    public String toString() {
+        return "\"" + string + "\"";
+    }
 }

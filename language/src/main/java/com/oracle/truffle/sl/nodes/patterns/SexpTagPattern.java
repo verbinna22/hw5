@@ -8,4 +8,9 @@ public class SexpTagPattern extends SLPatternNode {
     public boolean isMatch(Object value) {
         return value instanceof SLSexp;
     }
+
+    @Override
+    public String toString() {
+        return "#sexp";
+    }
 }

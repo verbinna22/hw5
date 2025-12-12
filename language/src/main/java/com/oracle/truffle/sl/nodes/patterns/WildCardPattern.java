@@ -7,4 +7,9 @@ public class WildCardPattern extends SLPatternNode {
     public boolean isMatch(Object value) {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "_";
+    }
 }

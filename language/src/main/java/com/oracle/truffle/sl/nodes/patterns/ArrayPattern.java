@@ -3,6 +3,10 @@ package com.oracle.truffle.sl.nodes.patterns;
 import com.oracle.truffle.sl.nodes.SLPatternNode;
 import com.oracle.truffle.sl.runtime.SLArray;
 
+import java.util.Arrays;
+
+import static com.oracle.truffle.sl.runtime.SLSexp.deHash;
+
 public class ArrayPattern extends SLPatternNode {
     private SLPatternNode[] nodes;
 
@@ -24,5 +28,15 @@ public class ArrayPattern extends SLPatternNode {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder("[");
+        for (var node : nodes) {
+            res.append(node.toString());
+        }
+        res.append("]");
+        return res.toString();
     }
 }

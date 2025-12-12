@@ -16,4 +16,9 @@ public class DecimalPattern extends SLPatternNode {
         }
         return l == number;
     }
+
+    @Override
+    public String toString() {
+        return "" + number;
+    }
 }
