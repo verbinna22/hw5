@@ -1,0 +1,2 @@
+graalVM 0m1,045s
+lamac   0m0,095s
