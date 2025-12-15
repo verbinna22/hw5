@@ -1,5 +1,6 @@
 package com.oracle.truffle.sl.nodes.expression;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
@@ -18,6 +19,7 @@ public final class SLArrayLiteralNode extends SLExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
+        CompilerAsserts.compilationConstant(elementNodes.length);
         var result = Arrays.stream(elementNodes).map(n -> n.executeGeneric(frame)).toArray();
         return new SLArray(result);
     }

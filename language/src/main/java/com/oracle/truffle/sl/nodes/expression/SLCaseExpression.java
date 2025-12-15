@@ -1,5 +1,6 @@
 package com.oracle.truffle.sl.nodes.expression;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
@@ -11,7 +12,8 @@ public final class SLCaseExpression extends SLExpressionNode {
     @Node.Children
     private final SLExpressionNode[] branchNodes;
     private final SLPatternNode[] patternNodes;
-    private final SLExpressionNode expr;
+    @Child
+    private SLExpressionNode expr;
 
     public SLCaseExpression(SLExpressionNode[] branchNodes, SLPatternNode[] patternNodes, SLExpressionNode expr) {
         this.branchNodes = branchNodes;
@@ -29,6 +31,8 @@ public final class SLCaseExpression extends SLExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         Object value = expr.executeGeneric(frame);
+        CompilerAsserts.compilationConstant(branchNodes.length);
+        CompilerAsserts.compilationConstant(patternNodes.length);
         for (int i = 0; i < branchNodes.length; ++i) {
 //            System.out.println("val " + value.toString());/////
 //            System.out.println("pat " + patternNodes[i].toString()); /////
