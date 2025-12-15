@@ -6,7 +6,7 @@ import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.runtime.SLClosure;
 import com.oracle.truffle.sl.runtime.SLFunctionWithClosure;
 
-public class SLFunctionWithClosureExpression extends SLExpressionNode {
+public final class SLFunctionWithClosureExpression extends SLExpressionNode {
     @Node.Child private SLExpressionNode closure;
     @Node.Child private SLExpressionNode function;
 

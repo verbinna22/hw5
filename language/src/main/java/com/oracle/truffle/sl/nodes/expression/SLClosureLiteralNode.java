@@ -8,7 +8,7 @@ import com.oracle.truffle.sl.runtime.SLClosure;
 import java.util.Arrays;
 
 @NodeInfo(shortName = "closureLiteral")
-public class SLClosureLiteralNode extends SLExpressionNode {
+public final class SLClosureLiteralNode extends SLExpressionNode {
     @Children private final SLExpressionNode[] elementNodes;
 
     public SLClosureLiteralNode(SLExpressionNode[] elementNodes) {

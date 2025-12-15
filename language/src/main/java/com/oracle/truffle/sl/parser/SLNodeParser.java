@@ -957,6 +957,7 @@ public class SLNodeParser extends SLBaseParser {
             final TruffleString name = asTruffleString(ctx.IDENTIFIER().getSymbol(), false);
             var receiver = createCallRead(assignmentName);
             var mName = accessibleWith(name.toString());
+            // System.out.println("direct call " + mName); ///
             if (mFuncToNonLocals.containsKey(mName) && !mFuncToNonLocals.get(mName).isEmpty()) {
                 List<SLExpressionNode> accessors = new ArrayList<>();
 //                    System.out.println(name + "<<<" + mName);///
@@ -2156,10 +2157,11 @@ public class SLNodeParser extends SLBaseParser {
         return result;
     }
 
-    private SLExpressionNode createCallRead(SLExpressionNode nameTerm) { // TODO: eliminate ?
+    private SLExpressionNode createCallRead(SLExpressionNode nameTerm) {
         final TruffleString name = ((SLStringLiteralNode) nameTerm).executeGeneric(null);
         // System.out.println(name.toString());///
         if (isFunction(name.toString())) { // name of the function
+            // System.out.println(name.toString() + " is func");///
             final SLExpressionNode result;
             result = SLFunctionLiteralNodeGen.create(new SLStringLiteralNode(TruffleString.fromConstant(accessibleWith(name.toString()), TruffleString.Encoding.UTF_8)));
             result.setSourceSection(nameTerm.getSourceCharIndex(), nameTerm.getSourceLength());

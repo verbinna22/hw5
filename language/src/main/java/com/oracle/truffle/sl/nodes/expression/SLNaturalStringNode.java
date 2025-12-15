@@ -6,7 +6,7 @@ import com.oracle.truffle.api.strings.TruffleString;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 
 @NodeInfo(shortName = "const")
-public class SLNaturalStringNode extends SLExpressionNode {
+public final class SLNaturalStringNode extends SLExpressionNode {
     private final StringBuilder value;
 
     public SLNaturalStringNode(StringBuilder value) {

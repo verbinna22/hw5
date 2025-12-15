@@ -9,7 +9,7 @@ import com.oracle.truffle.sl.runtime.SLArray;
 import java.util.Arrays;
 
 @NodeInfo(shortName = "array")
-public class SLArrayLiteralNode extends SLExpressionNode {
+public final class SLArrayLiteralNode extends SLExpressionNode {
     @Children private final SLExpressionNode[] elementNodes;
 
     public SLArrayLiteralNode(SLExpressionNode[] elementNodes) {
