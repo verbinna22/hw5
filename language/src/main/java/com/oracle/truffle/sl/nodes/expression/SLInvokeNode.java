@@ -104,20 +104,20 @@ public final class SLInvokeNode extends SLExpressionNode {
         CompilerAsserts.compilationConstant(argumentNodes.length);
         int shift = 0;
         Object[] argumentValues;
-//        if (function instanceof SLFunctionWithClosure fwc) {
-//            if (fwc.closure != null) {
-//                argumentValues = new Object[argumentNodes.length + 1];
-//                shift = 1;
-//                argumentValues[0] = fwc.closure;
-//                //System.out.println("Before exec " + fwc.function);///
-//                //System.out.println(fwc.closure.length());///
-//            } else {
-//                argumentValues = new Object[argumentNodes.length];
-//            }
-//            function = fwc.function;
-//        } else {
+        if (function instanceof SLFunctionWithClosure fwc) {
+            if (fwc.closure != null) {
+                argumentValues = new Object[argumentNodes.length + 1];
+                shift = 1;
+                argumentValues[0] = fwc.closure;
+                //System.out.println("Before exec " + fwc.function);///
+                //System.out.println(fwc.closure.length());///
+            } else {
+                argumentValues = new Object[argumentNodes.length];
+            }
+            function = fwc.function;
+        } else {
             argumentValues = new Object[argumentNodes.length];
-//        }
+        }
         for (int i = 0; i < argumentNodes.length; i++) {
             argumentValues[i + shift] = argumentNodes[i].executeGeneric(frame);
         }
