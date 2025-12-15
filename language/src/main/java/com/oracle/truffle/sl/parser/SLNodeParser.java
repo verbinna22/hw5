@@ -123,11 +123,11 @@ public class SLNodeParser extends SLBaseParser {
         mainBlockVisited = true;
         new NonLocalVisitor().visitMainBlock(ctx);
         // ----
-//        for (var name: funcToNonLocals.keySet()) {
+//        for (var name: mFuncToNonLocals.keySet()) {
 //            System.out.println("K: " + name);
-//            var nls = funcToNonLocals.get(name);
+//            var nls = mFuncToNonLocals.get(name);
 //            for (var nl : nls) {
-//                System.out.println("found-" + nl.fNameWhereFound);
+//                System.out.println("found-" + nl.fMNameWhereFound);
 //                System.out.println("id-" + nl.vId);
 //            }
 //        }
@@ -139,7 +139,7 @@ public class SLNodeParser extends SLBaseParser {
 //                System.out.println("I: " + mFuncToVarNameToInd.get(name).get(vname));
 //            }
 //        }
-        // ----
+        // ----///
 
         TruffleString functionName = SLStrings.MAIN;
 
