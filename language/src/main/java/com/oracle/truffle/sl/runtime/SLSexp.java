@@ -5,7 +5,7 @@ import com.oracle.truffle.sl.builtins.SLStringBuiltin;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class SLSexp {
+public final class SLSexp {
     private final long tag;
     private final Object[] elements;
 

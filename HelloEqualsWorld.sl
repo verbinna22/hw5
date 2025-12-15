@@ -1,9 +1,13 @@
 (*
  * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+ 
+ [engine] opt failed engine=1  id=27    root LinnerL33                                     |Tier 1|Time    75(  53+23  )ms|Reason: org.graalvm.compiler.code.SourceStackTraceBailoutException$1: Object of type Lcom/oracle/truffle/api/impl/FrameWithoutBoxing; should not be materialized (must not pass virtual object into an invoke that cannot be inlined):|UTC 2025-12-15T10:00:56.572|Src tmp.lama:2 0xffc9bb9a
+ 
  mvn package -DskipTests
  ./sl ./HelloEqualsWorld.sl
  --engine.TraceCompilationDetails
+ -J-Xss64M
  *)
 
 fun doIt(a) {

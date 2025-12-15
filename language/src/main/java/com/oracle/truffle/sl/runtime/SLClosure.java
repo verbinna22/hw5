@@ -1,6 +1,6 @@
 package com.oracle.truffle.sl.runtime;
 
-public class SLClosure {
+public final class SLClosure {
     private final Object[] elements;
 
     public SLClosure(Object[] elements) {
