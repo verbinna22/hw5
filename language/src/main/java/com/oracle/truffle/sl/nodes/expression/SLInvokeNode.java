@@ -41,6 +41,7 @@
 package com.oracle.truffle.sl.nodes.expression;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.instrumentation.Tag;
@@ -76,6 +77,7 @@ public final class SLInvokeNode extends SLExpressionNode {
         this.library = InteropLibrary.getFactory().createDispatched(3);
     }
 
+    @CompilerDirectives.CompilationFinal
     private boolean isTail = false;
 
     @Override
@@ -102,26 +104,26 @@ public final class SLInvokeNode extends SLExpressionNode {
         CompilerAsserts.compilationConstant(argumentNodes.length);
         int shift = 0;
         Object[] argumentValues;
-        if (function instanceof SLFunctionWithClosure fwc) {
-            if (fwc.closure != null) {
-                argumentValues = new Object[argumentNodes.length + 1];
-                shift = 1;
-                argumentValues[0] = fwc.closure;
-                //System.out.println("Before exec " + fwc.function);///
-                //System.out.println(fwc.closure.length());///
-            } else {
-                argumentValues = new Object[argumentNodes.length];
-            }
-            function = fwc.function;
-        } else {
+//        if (function instanceof SLFunctionWithClosure fwc) {
+//            if (fwc.closure != null) {
+//                argumentValues = new Object[argumentNodes.length + 1];
+//                shift = 1;
+//                argumentValues[0] = fwc.closure;
+//                //System.out.println("Before exec " + fwc.function);///
+//                //System.out.println(fwc.closure.length());///
+//            } else {
+//                argumentValues = new Object[argumentNodes.length];
+//            }
+//            function = fwc.function;
+//        } else {
             argumentValues = new Object[argumentNodes.length];
-        }
+//        }
         for (int i = 0; i < argumentNodes.length; i++) {
             argumentValues[i + shift] = argumentNodes[i].executeGeneric(frame);
         }
 
-        CompilerAsserts.compilationConstant(this.isTail());
-        if (this.isTail()) {
+        CompilerAsserts.compilationConstant(this.isTail);
+        if (this.isTail) {
             throw new TailCallException(function, argumentValues);
         }
         try {
