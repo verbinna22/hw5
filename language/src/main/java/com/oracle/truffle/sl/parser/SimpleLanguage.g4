@@ -289,7 +289,7 @@ case_branches
     ;
 
 case_expression
-    : 'case' expression 'of' case_branches 'esac'
+    : c='case' expression 'of' case_branches 'esac'
     ;
 
 lambda_expression

@@ -743,16 +743,26 @@ public class SLNodeParser extends SLBaseParser {
         @Override
         public SLExpressionNode visitCase_expression(SimpleLanguageParser.Case_expressionContext ctx) {
             SLExpressionNode expr = expressionVisitor.visitExpression(ctx.expression());
+
+            String newLocalString = "@CaseExpr" + ctx.c.getStartIndex();
+            TruffleString newLocal = TruffleString.fromConstant(newLocalString, TruffleString.Encoding.UTF_8);
+            curScope.declareLocal(newLocal);
+            fScope.declareVariable(newLocalString);
+            frameDescriptorBuilder.addSlot(FrameSlotKind.Illegal, newLocal, null);
+
+            SLExpressionNode ass = createAssignment((SLStringLiteralNode) createString(newLocal), expr, null);
+            SLExpressionNode rd = createRead(createString(newLocal));
+
             List<SLPatternNode> patternNodes = new ArrayList<>();
             List<SLExpressionNode> branchNodes = new ArrayList<>();
-            var patternVisitor = new PatternVisitor(expr);
+            var patternVisitor = new PatternVisitor(rd);
             for (var branch : ctx.case_branches().case_branch()) {
                 patternVisitor.visitCase_branch(branch);
                 patternNodes.add(patternVisitor.pattern);
                 branchNodes.add(patternVisitor.branch);
                 patternVisitor.clear();
             }
-            var result = new SLCaseExpression(branchNodes.toArray(SLExpressionNode[]::new), patternNodes.toArray(SLPatternNode[]::new), expr);
+            var result = new SLCaseExpression(branchNodes.toArray(SLExpressionNode[]::new), patternNodes.toArray(SLPatternNode[]::new), ass);
             final int start = ctx.getStart().getStartIndex();
             final int end = ctx.getStop().getStopIndex() + 1;
             result.setSourceSection(start, end - start);
@@ -1862,6 +1872,10 @@ public class SLNodeParser extends SLBaseParser {
         @Override
         public Void visitCase_expression(SimpleLanguageParser.Case_expressionContext ctx) {
             visitExpression(ctx.expression());
+            String newLocalString = "@CaseExpr" + ctx.c.getStartIndex();
+            TruffleString newLocal = TruffleString.fromConstant(newLocalString, TruffleString.Encoding.UTF_8);
+            curScope.declareLocal(newLocal);
+            fScope.declareVariable(newLocalString);
             for (var branch : ctx.case_branches().case_branch()) {
                 visitCase_branch(branch);
             }

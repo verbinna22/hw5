@@ -2777,6 +2777,7 @@ public class SimpleLanguageParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Case_expressionContext extends ParserRuleContext {
+		public Token c;
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
@@ -2801,7 +2802,7 @@ public class SimpleLanguageParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(395);
-			match(T__33);
+			((Case_expressionContext)_localctx).c = match(T__33);
 			setState(396);
 			expression();
 			setState(397);
