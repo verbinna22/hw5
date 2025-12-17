@@ -1,6 +1,8 @@
 package com.oracle.truffle.sl.nodes.patterns;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLPatternNode;
@@ -25,7 +27,9 @@ public class ArrayPattern extends SLExpressionNode {
     }
 
     @Override
+    @ExplodeLoop
     public boolean executeBoolean(VirtualFrame frame) {
+        CompilerAsserts.compilationConstant(nodes.length);
         var value = expression.executeGeneric(frame);
         if (!(value instanceof SLArray array)) {
             return false;
