@@ -1,2 +1,2 @@
-graalVM 0m1,045s
-lamac   0m0,095s
+graalVM 0m4,084s
+lamac   3m21,192s
