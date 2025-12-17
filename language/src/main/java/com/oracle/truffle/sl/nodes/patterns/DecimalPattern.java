@@ -7,8 +7,7 @@ import com.oracle.truffle.sl.nodes.SLPatternNode;
 
 public class DecimalPattern extends SLExpressionNode {
     private final long number;
-    @Node.Child
-    SLExpressionNode expression;
+    @Node.Child private SLExpressionNode expression;
 
     public DecimalPattern(long number, SLExpressionNode expression) {
         this.number = number;
