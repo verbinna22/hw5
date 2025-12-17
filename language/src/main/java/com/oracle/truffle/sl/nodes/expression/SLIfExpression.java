@@ -33,7 +33,9 @@ public final class SLIfExpression extends SLExpressionNode {
     @Override
     public void setIsTail() {
         thenPartNode.setIsTail();
-        elsePartNode.setIsTail();
+        if (elsePartNode != null) {
+            elsePartNode.setIsTail();
+        }
     }
 
     public SLIfExpression(SLExpressionNode conditionNode, SLExpressionNode thenPartNode, SLExpressionNode elsePartNode) {
