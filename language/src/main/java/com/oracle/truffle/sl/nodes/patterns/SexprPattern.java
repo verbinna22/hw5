@@ -1,5 +1,8 @@
 package com.oracle.truffle.sl.nodes.patterns;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLPatternNode;
 import com.oracle.truffle.sl.runtime.SLSexp;
 
@@ -7,17 +10,25 @@ import java.util.Arrays;
 
 import static com.oracle.truffle.sl.runtime.SLSexp.deHash;
 
-public class SexprPattern extends SLPatternNode {
-    private SLPatternNode[] nodes;
+public class SexprPattern extends SLExpressionNode {
+    @Child SLExpressionNode expression;
+    @Children private SLExpressionNode[] nodes;
     private long tag;
 
-    public SexprPattern(long tag, SLPatternNode[] nodes) {
+    public SexprPattern(long tag, SLExpressionNode[] nodes, SLExpressionNode expression) {
         this.tag = tag;
         this.nodes = nodes;
+        this.expression = expression;
     }
 
     @Override
-    public boolean isMatch(Object value) {
+    public Object executeGeneric(VirtualFrame frame) {
+        return executeBoolean(frame);
+    }
+
+    @Override
+    public boolean executeBoolean(VirtualFrame frame) {
+        var value = expression.executeGeneric(frame);
         if (!(value instanceof SLSexp sexp)) {
             return false;
         }
@@ -28,7 +39,11 @@ public class SexprPattern extends SLPatternNode {
             return false;
         }
         for (int i = 0; i < nodes.length; ++i) {
-            if (!nodes[i].isMatch(sexp.read(i))) {
+            try {
+                if (!nodes[i].executeBoolean(frame)) {
+                    return false;
+                }
+            } catch (UnexpectedResultException e) {
                 return false;
             }
         }

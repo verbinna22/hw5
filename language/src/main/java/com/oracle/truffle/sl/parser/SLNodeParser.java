@@ -753,7 +753,7 @@ public class SLNodeParser extends SLBaseParser {
             SLExpressionNode ass = createAssignment((SLStringLiteralNode) createString(newLocal), expr, null);
             SLExpressionNode rd = createRead(createString(newLocal));
 
-            List<SLPatternNode> patternNodes = new ArrayList<>();
+            List<SLExpressionNode> patternNodes = new ArrayList<>();
             List<SLExpressionNode> branchNodes = new ArrayList<>();
             var patternVisitor = new PatternVisitor(rd);
             for (var branch : ctx.case_branches().case_branch()) {
@@ -762,7 +762,7 @@ public class SLNodeParser extends SLBaseParser {
                 branchNodes.add(patternVisitor.branch);
                 patternVisitor.clear();
             }
-            var result = new SLCaseExpression(branchNodes.toArray(SLExpressionNode[]::new), patternNodes.toArray(SLPatternNode[]::new), ass);
+            var result = new SLCaseExpression(branchNodes.toArray(SLExpressionNode[]::new), patternNodes.toArray(SLExpressionNode[]::new), ass);
             final int start = ctx.getStart().getStartIndex();
             final int end = ctx.getStop().getStopIndex() + 1;
             result.setSourceSection(start, end - start);
@@ -1135,9 +1135,9 @@ public class SLNodeParser extends SLBaseParser {
             return result;
         }
 
-        private class PatternVisitor extends SimpleLanguageBaseVisitor<SLPatternNode> {
+        private class PatternVisitor extends SimpleLanguageBaseVisitor<SLExpressionNode> {
             SLExpressionNode branch = null;
-            SLPatternNode pattern = null;
+            SLExpressionNode pattern = null;
             List<Token> tokens = new ArrayList<>();
             Set<Token> ts = new HashSet<>();
             List<SLExpressionNode> nodes = new ArrayList<>();
@@ -1148,9 +1148,9 @@ public class SLNodeParser extends SLBaseParser {
             }
 
             @Override
-            public SLPatternNode visitSexprPattern(SimpleLanguageParser.SexprPatternContext ctx) {
+            public SLExpressionNode visitSexprPattern(SimpleLanguageParser.SexprPatternContext ctx) {
                 var parent = baseExpression;
-                List<SLPatternNode> subNodes = new ArrayList<>();
+                List<SLExpressionNode> subNodes = new ArrayList<>();
                 long i = 0;
                 if (ctx.pattern_list() != null) {
                     for (var subCtx : ctx.pattern_list().pattern()) {
@@ -1162,18 +1162,18 @@ public class SLNodeParser extends SLBaseParser {
                 }
                 baseExpression = parent;
                 var tag = SLSexp.lTagHash(ctx.UIDENTIFIER().getSymbol().getText());
-                return new SexprPattern(tag, subNodes.toArray(SLPatternNode[]::new));
+                return new SexprPattern(tag, subNodes.toArray(SLExpressionNode[]::new), baseExpression);
             }
 
             @Override
-            public SLPatternNode visitWildcardPattern(SimpleLanguageParser.WildcardPatternContext ctx) {
+            public SLExpressionNode visitWildcardPattern(SimpleLanguageParser.WildcardPatternContext ctx) {
                 return new WildCardPattern();
             }
 
             @Override
-            public SLPatternNode visitArrayPattern(SimpleLanguageParser.ArrayPatternContext ctx) {
+            public SLExpressionNode visitArrayPattern(SimpleLanguageParser.ArrayPatternContext ctx) {
                 var parent = baseExpression;
-                List<SLPatternNode> subNodes = new ArrayList<>();
+                List<SLExpressionNode> subNodes = new ArrayList<>();
                 long i = 0;
                 if (ctx.pattern_list() != null) {
                     for (var subCtx : ctx.pattern_list().pattern()) {
@@ -1183,38 +1183,42 @@ public class SLNodeParser extends SLBaseParser {
                     }
                 }
                 baseExpression = parent;
-                return new ArrayPattern(subNodes.toArray(SLPatternNode[]::new));
+                return new ArrayPattern(subNodes.toArray(SLExpressionNode[]::new), parent);
             }
 
             @Override
-            public SLPatternNode visitListPattern(SimpleLanguageParser.ListPatternContext ctx) {
+            public SLExpressionNode visitListPattern(SimpleLanguageParser.ListPatternContext ctx) {
                 var parent = baseExpression;
                 var child = baseExpression;
-                List<SLPatternNode> subNodes = new ArrayList<>();
+                List<SLExpressionNode> subNodes = new ArrayList<>();
+                List<SLExpressionNode> children = new ArrayList<>();
                 var tagNil = SLSexp.lTagHash("Nil");
                 var tagCons = SLSexp.lTagHash("Cons");
-                var result = new SexprPattern(tagNil, new SLPatternNode[0]);
                 if (ctx.pattern_list() != null) {
                     for (var subCtx : ctx.pattern_list().pattern()) {
                         baseExpression = SLReadPropertyNodeGen.create(child, new SLLongLiteralNode(0));
                         baseExpression.addExpressionTag();
+                        children.add(child);
                         child = SLReadPropertyNodeGen.create(child, new SLLongLiteralNode(1));
                         child.addExpressionTag();
                         subNodes.add(visitPattern(subCtx));
                     }
                 }
+                var result = new SexprPattern(tagNil, new SLExpressionNode[0], child);
+                int i = children.size() - 1;
                 for (var pat : subNodes.reversed()) {
-                    var components = new SLPatternNode[2];
+                    var components = new SLExpressionNode[2];
                     components[0] = pat;
                     components[1] = result;
-                    result = new SexprPattern(tagCons, components);
+                    var appropriateChild = children.get(i--);
+                    result = new SexprPattern(tagCons, components, appropriateChild);
                 }
                 baseExpression = parent;
                 return result;
             }
 
             @Override
-            public SLPatternNode visitNamedPattern(SimpleLanguageParser.NamedPatternContext ctx) {
+            public SLExpressionNode visitNamedPattern(SimpleLanguageParser.NamedPatternContext ctx) {
                 var result = visitPattern(ctx.pattern());
                 // System.out.println("was in named");///
                 var tok = ctx.IDENTIFIER().getSymbol();
@@ -1228,7 +1232,7 @@ public class SLNodeParser extends SLBaseParser {
             }
 
             @Override
-            public SLPatternNode visitNamedVarPattern(SimpleLanguageParser.NamedVarPatternContext ctx) {
+            public SLExpressionNode visitNamedVarPattern(SimpleLanguageParser.NamedVarPatternContext ctx) {
                 var result = new WildCardPattern();
                 var tok = ctx.IDENTIFIER().getSymbol();
                 if (ts.contains(tok)) {
@@ -1241,71 +1245,71 @@ public class SLNodeParser extends SLBaseParser {
             }
 
             @Override
-            public SLPatternNode visitDecimalPattern(SimpleLanguageParser.DecimalPatternContext ctx) {
-                return new DecimalPattern(Long.parseLong(ctx.NUMERIC_LITERAL().getSymbol().getText()));
+            public SLExpressionNode visitDecimalPattern(SimpleLanguageParser.DecimalPatternContext ctx) {
+                return new DecimalPattern(Long.parseLong(ctx.NUMERIC_LITERAL().getSymbol().getText()), baseExpression);
             }
 
             @Override
-            public SLPatternNode visitStringPattern(SimpleLanguageParser.StringPatternContext ctx) {
+            public SLExpressionNode visitStringPattern(SimpleLanguageParser.StringPatternContext ctx) {
                 var string = new StringBuilder(ctx.STRING_LITERAL().getSymbol().getText());
                 string.deleteCharAt(0);
                 string.deleteCharAt(string.length() - 1);
-                return new StringPattern(string.toString());
+                return new StringPattern(string.toString(), baseExpression);
             }
 
             @Override
-            public SLPatternNode visitCharPattern(SimpleLanguageParser.CharPatternContext ctx) {
-                return new DecimalPattern(ctx.CHAR_LITERAL().getSymbol().getText().charAt(1));
+            public SLExpressionNode visitCharPattern(SimpleLanguageParser.CharPatternContext ctx) {
+                return new DecimalPattern(ctx.CHAR_LITERAL().getSymbol().getText().charAt(1), baseExpression);
             }
 
             @Override
-            public SLPatternNode visitTruePattern(SimpleLanguageParser.TruePatternContext ctx) {
-                return new DecimalPattern(1);
+            public SLExpressionNode visitTruePattern(SimpleLanguageParser.TruePatternContext ctx) {
+                return new DecimalPattern(1, baseExpression);
             }
 
             @Override
-            public SLPatternNode visitFalsePattern(SimpleLanguageParser.FalsePatternContext ctx) {
-                return new DecimalPattern(0);
+            public SLExpressionNode visitFalsePattern(SimpleLanguageParser.FalsePatternContext ctx) {
+                return new DecimalPattern(0, baseExpression);
             }
 
             @Override
-            public SLPatternNode visitBoxTagPattern(SimpleLanguageParser.BoxTagPatternContext ctx) {
-                return new BoxTagPattern();
+            public SLExpressionNode visitBoxTagPattern(SimpleLanguageParser.BoxTagPatternContext ctx) {
+                return new BoxTagPattern(baseExpression);
             }
 
             @Override
-            public SLPatternNode visitValTagPattern(SimpleLanguageParser.ValTagPatternContext ctx) {
-                return new ValTagPattern();
+            public SLExpressionNode visitValTagPattern(SimpleLanguageParser.ValTagPatternContext ctx) {
+                return new ValTagPattern(baseExpression);
             }
 
             @Override
-            public SLPatternNode visitStrTagPattern(SimpleLanguageParser.StrTagPatternContext ctx) {
-                return new StrTagPattern();
+            public SLExpressionNode visitStrTagPattern(SimpleLanguageParser.StrTagPatternContext ctx) {
+                return new StrTagPattern(baseExpression);
             }
 
             @Override
-            public SLPatternNode visitArrayTagPattern(SimpleLanguageParser.ArrayTagPatternContext ctx) {
-                return new ArrayTagPattern();
+            public SLExpressionNode visitArrayTagPattern(SimpleLanguageParser.ArrayTagPatternContext ctx) {
+                return new ArrayTagPattern(baseExpression);
             }
 
             @Override
-            public SLPatternNode visitSexpTagPattern(SimpleLanguageParser.SexpTagPatternContext ctx) {
-                return new SexpTagPattern();
+            public SLExpressionNode visitSexpTagPattern(SimpleLanguageParser.SexpTagPatternContext ctx) {
+                return new SexpTagPattern(baseExpression);
             }
 
             @Override
-            public SLPatternNode visitFunTagPattern(SimpleLanguageParser.FunTagPatternContext ctx) {
+            public SLExpressionNode visitFunTagPattern(SimpleLanguageParser.FunTagPatternContext ctx) {
                 //System.out.println("was in fun");///
-                return new FunTagPattern();
+                return new FunTagPattern(baseExpression);
             }
 
             @Override
-            public SLPatternNode visitPatternInBraces(SimpleLanguageParser.PatternInBracesContext ctx) {
+            public SLExpressionNode visitPatternInBraces(SimpleLanguageParser.PatternInBracesContext ctx) {
                 return visitPattern(ctx.pattern());
             }
 
             @Override
-            public SLPatternNode visitConsPattern(SimpleLanguageParser.ConsPatternContext ctx) {
+            public SLExpressionNode visitConsPattern(SimpleLanguageParser.ConsPatternContext ctx) {
                 var tagCons = SLSexp.lTagHash("Cons");
                 var parent = baseExpression;
                 baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(0));
@@ -1316,14 +1320,14 @@ public class SLNodeParser extends SLBaseParser {
                 baseExpression = SLReadPropertyNodeGen.create(parent, new SLLongLiteralNode(1));
                 var tl = visit(ctx.pattern());
                 baseExpression = parent;
-                var components = new SLPatternNode[2];
+                var components = new SLExpressionNode[2];
                 components[0] = hd;
                 components[1] = tl;
-                return new SexprPattern(tagCons, components);
+                return new SexprPattern(tagCons, components, parent);
             }
 
             @Override
-            public SLPatternNode visitCase_branch(SimpleLanguageParser.Case_branchContext ctx) {
+            public SLExpressionNode visitCase_branch(SimpleLanguageParser.Case_branchContext ctx) {
                 // ---
                 pattern = visitPattern(ctx.pattern());
                 // ---

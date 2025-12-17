@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.nodes.SLPatternNode;
 
@@ -11,11 +12,12 @@ import com.oracle.truffle.sl.nodes.SLPatternNode;
 public final class SLCaseExpression extends SLExpressionNode {
     @Node.Children
     private final SLExpressionNode[] branchNodes;
-    private final SLPatternNode[] patternNodes;
+    @Node.Children
+    private final SLExpressionNode[] patternNodes;
     @Child
     private SLExpressionNode expr;
 
-    public SLCaseExpression(SLExpressionNode[] branchNodes, SLPatternNode[] patternNodes, SLExpressionNode expr) {
+    public SLCaseExpression(SLExpressionNode[] branchNodes, SLExpressionNode[] patternNodes, SLExpressionNode expr) {
         this.branchNodes = branchNodes;
         this.patternNodes = patternNodes;
         this.expr = expr;
@@ -36,8 +38,12 @@ public final class SLCaseExpression extends SLExpressionNode {
         for (int i = 0; i < branchNodes.length; ++i) {
 //            System.out.println("val " + value.toString());/////
 //            System.out.println("pat " + patternNodes[i].toString()); /////
-            if (patternNodes[i].isMatch(value)) {
-                return branchNodes[i].executeGeneric(frame);
+            try {
+                if (patternNodes[i].executeBoolean(frame)) {
+                    return branchNodes[i].executeGeneric(frame);
+                }
+            } catch (UnexpectedResultException e) {
+                throw new RuntimeException(e);
             }
         }
         throw new RuntimeException("match failure");
