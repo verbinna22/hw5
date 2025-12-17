@@ -3,12 +3,11 @@ package com.oracle.truffle.sl.nodes.expression;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.runtime.SLSexp;
-
-import java.util.Arrays;
 
 @NodeInfo(shortName = "sexp")
 public class SLSexpNode extends SLExpressionNode {
@@ -23,10 +22,14 @@ public class SLSexpNode extends SLExpressionNode {
     }
 
     @Override
+    @ExplodeLoop
     public Object executeGeneric(VirtualFrame frame) {
         CompilerAsserts.compilationConstant(tag);
         CompilerAsserts.compilationConstant(elementNodes.length);
-        var result = Arrays.stream(elementNodes).map(n -> n.executeGeneric(frame)).toArray();
-        return new SLSexp(result, tag);
+        Object[] results = new Object[elementNodes.length];
+        for (int i = 0; i < elementNodes.length; ++i) {
+            results[i] = elementNodes[i].executeGeneric(frame);
+        }
+        return new SLSexp(results, tag);
     }
 }

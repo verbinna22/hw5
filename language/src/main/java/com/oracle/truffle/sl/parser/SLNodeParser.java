@@ -837,8 +837,8 @@ public class SLNodeParser extends SLBaseParser {
                     break;
                 case ":":
                     var components = new SLExpressionNode[2];
-                    components[1] = leftUnboxed;
-                    components[0] = rightUnboxed;
+                    components[1] = leftNode;
+                    components[0] = rightNode;
                     result = new SLSexpNode("Cons", components);
                     break;
                 case "+":
