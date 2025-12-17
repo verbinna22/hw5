@@ -2,6 +2,7 @@ package com.oracle.truffle.sl.nodes.expression;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
@@ -32,27 +33,28 @@ public final class SLCaseExpression extends SLExpressionNode {
     }
 
     @Override
+    @ExplodeLoop
     public Object executeGeneric(VirtualFrame frame) {
         expr.executeVoid(frame);
         CompilerAsserts.compilationConstant(branchNodes.length);
         CompilerAsserts.compilationConstant(patternNodes.length);
-        try {/////
-            if (patternNodes[0].executeBoolean(frame)) {
-                return branchNodes[0].executeGeneric(frame); /////
+//        try {/////
+//            if (patternNodes[0].executeBoolean(frame)) {
+//                return branchNodes[0].executeGeneric(frame); /////
+//            }
+//        } catch (UnexpectedResultException e) {
+//                throw new RuntimeException("unreachable");
+//            }/////
+
+        try {
+            for (int i = 0; i < branchNodes.length; ++i) {
+                if (patternNodes[i].executeBoolean(frame)) {
+                    return branchNodes[i].executeGeneric(frame);
+                }
             }
         } catch (UnexpectedResultException e) {
-                throw new RuntimeException("unreachable");
-            }/////
-
-//        try {
-//            for (int i = 0; i < branchNodes.length; ++i) {
-//                if ((boolean)patternNodes[i].executeGeneric(frame)) {
-//                    return branchNodes[i].executeGeneric(frame);
-//                }
-//            }
-        //} catch (UnexpectedResultException e) {
-//            throw new RuntimeException("unreachable");
-//        }
+            throw new RuntimeException("unreachable");
+        }
         throw new RuntimeException("match failure");
     }
 }

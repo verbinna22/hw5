@@ -1,6 +1,8 @@
 package com.oracle.truffle.sl.nodes.expression;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.sl.nodes.SLExpressionNode;
 import com.oracle.truffle.sl.runtime.SLClosure;
@@ -16,8 +18,13 @@ public final class SLClosureLiteralNode extends SLExpressionNode {
     }
 
     @Override
+    @ExplodeLoop
     public Object executeGeneric(VirtualFrame frame) {
-        var result = Arrays.stream(elementNodes).map(n -> n.executeGeneric(frame)).toArray();
-        return new SLClosure(result);
+        CompilerAsserts.compilationConstant(elementNodes.length);
+        Object[] results = new Object[elementNodes.length];
+        for (int i = 0; i < elementNodes.length; ++i) {
+            results[i] = elementNodes[i].executeGeneric(frame);
+        }
+        return new SLClosure(results);
     }
 }
